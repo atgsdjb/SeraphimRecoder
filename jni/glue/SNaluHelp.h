@@ -1,7 +1,7 @@
 #ifndef _SERAPHIM_NALU_HELP
 #define _SERAPHIM_NALU_HELP
 #include<cstdio>
-#include<cstdint>
+#include<stdint.h>
 #include<vector>
 
 using namespace std;

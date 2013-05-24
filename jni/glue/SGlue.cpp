@@ -3,13 +3,12 @@ extern"C"{
 #include<stdint.h>
 #include"pthread.h"
 };
-#include<iostream>
 #include<map>
 #include"STrackParam.h"
 #include"context.h"
 #include"SMp4Creater.h"
 extern"C"{
-#include"x264.h"
+#include"../x264/x264.h"
 #include"../aac/faac.h"
 #include"../aac/faaccfg.h"
 };
@@ -50,8 +49,8 @@ void initAAC(int trackIndex,STrackParam* param){
 /*                                                                      */
 /************************************************************************/
 static void initParam(x264_param_t* pX264Param,SVideoTrackParm* videoParam){
-	pX264Param->i_threads = X264_SYNC_LOOKAHEAD_AUTO;	//* È¡¿Õ»º³åÇø¼ÌÐøÊ¹ÓÃ²»ËÀËøµÄ±£Ö¤.//* video Properties
-	pX264Param->i_frame_total = 0;						//* ±àÂë×ÜÖ¡Êý.²»ÖªµÀÓÃ0.
+	pX264Param->i_threads = X264_SYNC_LOOKAHEAD_AUTO;	//* È¡ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½Ã²ï¿½ï¿½ï¿½ï¿½ï¿½Ä±ï¿½Ö¤.//* video Properties
+	pX264Param->i_frame_total = 0;						//* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½.ï¿½ï¿½Öªï¿½ï¿½ï¿½ï¿½0.
 	pX264Param->i_keyint_max = 10;	
 	pX264Param->i_bframe = 5;
 	pX264Param->b_open_gop = 0;
@@ -59,15 +58,15 @@ static void initParam(x264_param_t* pX264Param,SVideoTrackParm* videoParam){
 	pX264Param->i_bframe_adaptive = X264_B_ADAPT_TRELLIS;
 	pX264Param->b_annexb = 1;
 	pX264Param->i_log_level = X264_LOG_NONE;
-	pX264Param->rc.i_bitrate = videoParam->bitRate;//1024 * 500;				//* ÂëÂÊ(±ÈÌØÂÊ,µ¥Î»Kbps), muxing parameters
-	pX264Param->i_fps_den = 1;							//* Ö¡ÂÊ·ÖÄ¸
-	pX264Param->i_fps_num = 25;							//* Ö¡ÂÊ·Ö×Ó
+	pX264Param->rc.i_bitrate = videoParam->bitRate;//1024 * 500;				//* ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Î»Kbps), muxing parameters
+	pX264Param->i_fps_den = 1;							//* Ö¡ï¿½Ê·ï¿½Ä¸
+	pX264Param->i_fps_num = 25;							//* Ö¡ï¿½Ê·ï¿½ï¿½ï¿½
 	pX264Param->i_timebase_den = pX264Param->i_fps_num;
 	pX264Param->i_timebase_num = pX264Param->i_fps_den;
 	pX264Param->i_width = videoParam->width;
 	pX264Param->i_height=videoParam->height;
-	//pX264Param->i_threads = X264_SYNC_LOOKAHEAD_AUTO;	//* È¡¿Õ»º³åÇø¼ÌÐøÊ¹ÓÃ²»ËÀËøµÄ±£Ö¤.//* video Properties
-	//pX264Param->i_frame_total = 0;						//* ±àÂë×ÜÖ¡Êý.²»ÖªµÀÓÃ0.
+	//pX264Param->i_threads = X264_SYNC_LOOKAHEAD_AUTO;	//* È¡ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½Ã²ï¿½ï¿½ï¿½ï¿½ï¿½Ä±ï¿½Ö¤.//* video Properties
+	//pX264Param->i_frame_total = 0;						//* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½.ï¿½ï¿½Öªï¿½ï¿½ï¿½ï¿½0.
 	//pX264Param->i_keyint_max = 10;	
 	//pX264Param->i_bframe = 5;
 	//pX264Param->b_open_gop = 0;
@@ -75,9 +74,9 @@ static void initParam(x264_param_t* pX264Param,SVideoTrackParm* videoParam){
 	//pX264Param->i_bframe_adaptive = X264_B_ADAPT_TRELLIS;
 	//pX264Param->b_annexb = 1;
 	//pX264Param->i_log_level = X264_LOG_NONE;
-	//pX264Param->rc.i_bitrate = 1024 * 500;				//* ÂëÂÊ(±ÈÌØÂÊ,µ¥Î»Kbps), muxing parameters
-	//pX264Param->i_fps_den = 1;							//* Ö¡ÂÊ·ÖÄ¸
-	//pX264Param->i_fps_num = 25;							//* Ö¡ÂÊ·Ö×Ó
+	//pX264Param->rc.i_bitrate = 1024 * 500;				//* ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Î»Kbps), muxing parameters
+	//pX264Param->i_fps_den = 1;							//* Ö¡ï¿½Ê·ï¿½Ä¸
+	//pX264Param->i_fps_num = 25;							//* Ö¡ï¿½Ê·ï¿½ï¿½ï¿½
 	//pX264Param->i_timebase_den = pX264Param->i_fps_num;
 	//pX264Param->i_timebase_num = pX264Param->i_fps_den;
 	//pX264Param->i_width = width;
@@ -106,56 +105,56 @@ void initAVC(int trackIndex,SVideoTrackParm* videoParam){
 /************************************************************************/
 /*                                                                      */
 /************************************************************************/
-#include<vector>
-void init(char* baseName,uint8_t countTrack,vector<STrackParam*> paramS,bool videoSoftEncoded,bool audioSoftEncoded){
-	g_lenPPS=-1;
-	g_lenSPS=-1;
-	g_PPS = 0;
-	g_SPS = 0;
-	context = new SEncoderContext;
-	//audioId = 1, videoId =  0;
-	context->baseName = "d:\\1video\\%4d.mp4";
-	context->countTrack = countTrack;
-	context->runing = true;
-	for(int i =0;i<countTrack;i++){
-		context->idAndBuf[i] = new SSyncBuffer;
-		context->idAndNSample[i] = 0;
-		context->idAndParm[i] =paramS[i];
-		if(audioSoftEncoded && context->idAndParm[i]->type==1){
-			initAAC(i,context->idAndParm[i]);
-			pthread_t aTid;
-			pthread_create(&aTid,NULL,aacTask,NULL);
-		}
-		if(videoSoftEncoded && context->idAndParm[i]->type == 0){
-			SVideoTrackParm* param = (SVideoTrackParm*) context->idAndParm[i];
-			initAVC(i,param);
-			pthread_t vTid;
-			pthread_create(&vTid,NULL,avcTask,NULL);
-		}
-	}
-	pthread_t tid ;
-	pthread_create(&tid,NULL,workTask,NULL);
-}
-void addSample(uint8_t trackId,uint8_t* sample,size_t len){
+//#include<vector>
+//void init(char* baseName,uint8_t countTrack,vector<STrackParam*> paramS,bool videoSoftEncoded,bool audioSoftEncoded){
+//	g_lenPPS=-1;
+//	g_lenSPS=-1;
+//	g_PPS = 0;
+//	g_SPS = 0;
+//	context = new SEncoderContext;
+//	//audioId = 1, videoId =  0;
+//	context->baseName = "d:\\1video\\%4d.mp4";
+//	context->countTrack = countTrack;
+//	context->runing = true;
+//	for(int i =0;i<countTrack;i++){
+//		context->idAndBuf[i] = new SSyncBuffer;
+//		context->idAndNSample[i] = 0;
+//		context->idAndParm[i] =paramS[i];
+//		if(audioSoftEncoded && context->idAndParm[i]->type==1){
+//			initAAC(i,context->idAndParm[i]);
+//			pthread_t aTid;
+//			pthread_create(&aTid,NULL,aacTask,NULL);
+//		}
+//		if(videoSoftEncoded && context->idAndParm[i]->type == 0){
+//			SVideoTrackParm* param = (SVideoTrackParm*) context->idAndParm[i];
+//			initAVC(i,param);
+//			pthread_t vTid;
+//			pthread_create(&vTid,NULL,avcTask,NULL);
+//		}
+//	}
+//	pthread_t tid ;
+//	pthread_create(&tid,NULL,workTask,NULL);
+//}
+//void addSample(uint8_t trackId,uint8_t* sample,size_t len){
+//
+//}
 
-}
-
-
-int main(int argc,char** argv){
-	char baseName[]="d:\\1video\\%04d.mp4";
-	STrackParam *v_param = new SVideoTrackParm(90000,352,288,1024 * 500,25,120*90000);
-	STrackParam *a_param = new SAudioTrackParam(44100,128*1024,44100,120 * 44100);
-	vector<STrackParam*> paramVect ;
-	paramVect.push_back(v_param);
-	paramVect.push_back(a_param);
-	init(baseName,2,paramVect,true,true);
-	pthread_t tid ;
-	context->pcmBuf = new SSyncBuffer;
-	pthread_create(&tid,NULL,readPCM,NULL);
-	printf("-----seraphim--------\n");
-	
-	int i;
-
-	cin>>i;
-	return 0;
-}
+//
+//int main(int argc,char** argv){
+//	char baseName[]="d:\\1video\\%04d.mp4";
+//	STrackParam *v_param = new SVideoTrackParm(90000,352,288,1024 * 500,25,120*90000);
+//	STrackParam *a_param = new SAudioTrackParam(44100,128*1024,44100,120 * 44100);
+//	vector<STrackParam*> paramVect ;
+//	paramVect.push_back(v_param);
+//	paramVect.push_back(a_param);
+//	init(baseName,2,paramVect,true,true);
+//	pthread_t tid ;
+//	context->pcmBuf = new SSyncBuffer;
+//	pthread_create(&tid,NULL,readPCM,NULL);
+//	printf("-----seraphim--------\n");
+//
+//	int i;
+//
+//	cin>>i;
+//	return 0;
+//}

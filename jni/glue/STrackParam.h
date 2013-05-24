@@ -8,9 +8,10 @@ public:
 	int bitRate;
 	int sampleRate;
 	int duration;
+	bool usedSoftEncode;
 	//int renderingOffset;
-	STrackParam(int _type,int _timeScale,int _bitRate,int _sampleRate,int _duration)
-	:type(_type),timeScale(_timeScale),bitRate(_bitRate),sampleRate(_sampleRate),duration(_duration){};
+	STrackParam(int _type,int _timeScale,int _bitRate,int _sampleRate,int _duration,bool _useSoftEncode=false)
+	:type(_type),timeScale(_timeScale),bitRate(_bitRate),sampleRate(_sampleRate),duration(_duration),usedSoftEncode(_useSoftEncode){};
 	/*virtual*/ int getType(){return type;}
 				int getTimeScale(){return timeScale;};
 				int getBitRate(){return bitRate;};
@@ -21,8 +22,8 @@ class SAudioTrackParam  :public  STrackParam{
 public :
 	
 	uint32_t durationPreFrame;
-	SAudioTrackParam(int _timeScale,int _bitRate,int _sampleRate,int _duration)
-	:STrackParam(1,_timeScale,_bitRate,_sampleRate,_duration),durationPreFrame(_timeScale*1024/_sampleRate){};
+	SAudioTrackParam(int _timeScale,int _bitRate,int _sampleRate,int _duration,bool usedSoftEncode=false)
+	:STrackParam(1,_timeScale,_bitRate,_sampleRate,_duration,usedSoftEncode),durationPreFrame(_timeScale*1024/_sampleRate){};
 };
 class SVideoTrackParm : public STrackParam{
 public:
@@ -30,8 +31,8 @@ public:
 
 	int height;
 	uint32_t durationPreFrame;
-	SVideoTrackParm(int _timeScale,int _width,int _height,int _bitRate,int _sampleRate,int _duration )
-	:STrackParam(0,_timeScale,_bitRate,_sampleRate,_duration),width(_width),height(_height),durationPreFrame(_timeScale/_sampleRate){};
+	SVideoTrackParm(int _timeScale,int _width,int _height,int _bitRate,int _sampleRate,int _duration,bool usedSoftEncode=false)
+	:STrackParam(0,_timeScale,_bitRate,_sampleRate,_duration,usedSoftEncode),width(_width),height(_height),durationPreFrame(_timeScale/_sampleRate){};
 };
 };
 #endif

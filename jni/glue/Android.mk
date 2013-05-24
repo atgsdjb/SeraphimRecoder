@@ -8,7 +8,7 @@ LOCAL_SRC_FILES	+= $(MY_FILES)
 
 LOCAL_STATIC_LIBRARIES :=faac mp4v2
 LOCAL_LDLIBS := -lz -lc -lm -llog
-###LOCAL_CXXFLAGS += -std=c++11 
+//LOCAL_CXXFLAGS += -std=c++11 
 LOCAL_MODULE    := tdcodec.01
 
 include $(BUILD_SHARED_LIBRARY)

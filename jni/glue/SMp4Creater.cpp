@@ -12,7 +12,7 @@ extern"C"{
 };
 #endif
 namespace Seraphim{
-
+	/*
 	static void* encode_task(void *handle){
 		SMp4Creater *creater = (SMp4Creater*)handle;
 		int i =0;
@@ -21,6 +21,7 @@ namespace Seraphim{
 		}
 		return 0;
 	}
+	*/
 	SMp4Creater::SMp4Creater(const char* _name,uint32_t _duration,map<uint8_t,STrackParam*> _trackParamS,map<uint8_t,SSyncBuffer*> _trackBufS,bool _isAsyn/* =false */,CompleteListener _listener/* =0 */)
 	:name(_name),trackParamS(_trackParamS),trackBufS(_trackBufS),duration(_duration),isAsyn(_isAsyn),listener(_listener){
 		assert(_trackBufS.size() == _trackParamS.size());

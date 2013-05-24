@@ -2,7 +2,7 @@
 #define  __SERAPHIM_SGLUE_H
 extern"C"{
 #include<stdint.h>
-#include"x264.h"
+#include"../x264/x264.h"
 #include"../aac/faac.h"
 #include"../aac/faaccfg.h"
 };

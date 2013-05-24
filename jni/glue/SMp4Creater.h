@@ -4,11 +4,11 @@
 #define DEBUG
 
 
-#include<cstdint>
+#include<stdint.h>
 #include"SSyncBuf.h"
 #include"StrackParam.h"
 #include"pthread.h"
-#include"../mp4/mp4.h"
+#include"../mp4v2/mp4.h"
 #include<map>
 #include<vector>
 //class STrackParam;
@@ -53,7 +53,7 @@ public:
 	STrackParam* getTrackParam(int trackIndex);
 
 
-	friend void* encode_task(void*);
+	//friend void* encode_task(void*);
 
 };
 };

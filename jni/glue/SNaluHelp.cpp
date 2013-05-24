@@ -6,8 +6,8 @@ extern"C"{
 #include<vector>
 
 #ifdef SDEBUG
-#include<iostream>
-#include<cassert>
+//#include<iostream>
+//#include<cassert>
 #endif
 using namespace std;
 namespace Seraphim{
