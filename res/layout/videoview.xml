@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    <!-- 
+    <Button 
+    android:id="@+id/button1"  
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:text="播放"
+    />
+    <Button 
+    android:id="@+id/button2"  
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:text="停止"
+    />   -->
+    
+    <LinearLayout 
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+   		<Button
+   		    	android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:layout_weight="50"
+				android:text="第一频道"
+				android:onClick="one">
+   		</Button>
+   		<Button
+   		    	android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:layout_weight="50"
+				android:text="第二频道"
+				android:onClick="two">
+   		</Button>
+    </LinearLayout>
+    <VideoView 
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:id="@+id/video"/>
+</LinearLayout>

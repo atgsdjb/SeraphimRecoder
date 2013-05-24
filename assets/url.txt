@@ -1,0 +1,1 @@
+http://home.uusee.com/app/user/userchannel/?userId=%@&nickName=%@&title=%@&deviceName=%@&deviceOS=%@&deviceSerialNo=%@&longitude=%@&latitude=%@

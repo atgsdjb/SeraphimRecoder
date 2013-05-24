@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#000000"
+    android:orientation="vertical" >
+	<RelativeLayout
+	    android:id="@+id/linearLayout1"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:background="@drawable/share_top_lable" 
+	    android:paddingLeft="0dip">
+	    <Button 
+	        android:id="@+id/close"
+	        android:layout_width="59dip"
+	        android:layout_height="31dip"
+	        android:layout_alignParentLeft="true"
+	        android:layout_centerVertical="true"
+	        android:layout_marginLeft="10dip"
+	        android:layout_marginRight="0dip"
+	        android:background="@drawable/close">
+	    </Button>
+	    <Button 
+	        android:id="@+id/bank"
+	        android:layout_width="59dip"
+	        android:layout_height="31dip"
+	        android:layout_toRightOf="@id/close"
+	        android:layout_centerVertical="true"
+	        android:layout_marginLeft="0dip"
+	        android:layout_marginRight="0dip"
+	        android:background="@drawable/bank">
+	    </Button>
+	   <Button 
+	        android:id="@+id/forward"
+	        android:layout_width="59dip"
+	        android:layout_height="31dip"
+	        android:layout_centerVertical="true"
+	        android:layout_toRightOf="@id/bank"
+	        android:background="@drawable/forward">
+	    </Button>
+	    <Button 
+	        android:id="@+id/updata"
+	        android:layout_width="59dp"
+	        android:layout_height="31dp"
+	        android:layout_centerVertical="true"
+	       	android:layout_alignParentRight="true"
+	       	android:layout_marginRight="10dip"
+	        android:background="@drawable/updata">
+	    </Button>
+	</RelativeLayout>
+ 	<WebView  android:id="@+id/shareweb"
+	    	android:layout_width="fill_parent"
+	    	android:layout_height="fill_parent"/> 
+</LinearLayout>

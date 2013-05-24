@@ -1,0 +1,603 @@
+#include<android/log.h>
+#include<list>
+#include"../mp4v2/mp4.h"
+#include"sync_buf.h"
+#include"../mp4v2/track_param.h"
+#include"aac_adts.h"
+#include"../faac/faac.h"
+#include"../faac/faaccfg.h"
+extern"C"{
+#include<pthread.h>
+#include"us_log.h"
+#include"stdio.h"
+#include<jni.h>
+#include<stdint.h>
+#include<stdio.h>
+#include<math.h>
+}
+#define MAX_COUNT_SAMPLE 12
+using namespace Seraphim;
+using namespace std;
+extern"C"{
+typedef struct{
+	int sampleFile;
+	const char* mp4BaseName;
+	SyncBuffer *pcmBuffer;
+	int countTrack;
+	SyncBuffer **bufferS;
+	QTrackParam **paramS;
+}ThreadParam;
+ThreadParam *handler;
+
+bool hasPPS ;
+uint8_t* pps;
+int lenPps;
+uint8_t* sps;
+int lenSps;
+uint8_t* frameHead;
+uint32_t countFrame=0;
+/**
+ *
+ */
+static bool NotComplete(bool* stateS,int count){
+	for(int i = 0;i<count;i++){
+		if(!stateS[i]){
+			return true;
+		}
+
+	}
+	return false;
+}
+
+/**
+ *
+ */
+void* create_mp4(void* param){
+	ThreadParam *handler = (ThreadParam *)param;
+	const int count  =handler->countTrack;
+	const char* baseName = handler->mp4BaseName;
+	char name[128]={0};
+	int indexFile = 0;
+	uint32_t indexSample[MAX_COUNT_SAMPLE] ={0};
+	for(int i = 0;i<count;i++)
+		indexSample[i]=0;
+	int len = -1;
+	uint8_t* sample = NULL;
+	while(true){
+		int timeScale = 90000;
+		sprintf(name,baseName,indexFile++);
+		MP4FileHandle file = MP4CreateEx(name, MP4_DETAILS_ALL, 0, 1, 1, 0, 0, 0, 0);//
+		MP4SetTimeScale(file,timeScale);
+		MP4TrackId trackID[MAX_COUNT_SAMPLE]={0};
+
+		int  sampleDuration[MAX_COUNT_SAMPLE]={0};
+		bool trackFinsh[MAX_COUNT_SAMPLE]={0};
+		for(int i=0;i<count;i++){
+			QTrackParam *param = handler->paramS[i];
+			trackFinsh[i] = false;
+			MP4TrackId track;
+			if(param->type == 0){
+				QVideoTrackParm *videoParam = (QVideoTrackParm*)param;
+				int timeScale = videoParam->timeScale;
+				int bitRate = videoParam->bitRate;
+				int sampleRate = videoParam->sampleRate;
+				int width  = videoParam->width;
+				int height = videoParam->height;
+				sampleDuration[i] = timeScale/sampleRate;
+				track = MP4AddH264VideoTrack(file,timeScale,timeScale/sampleRate/*sampleDuration*/,width,height,0x64,0x00,0x1f,3);/*other param is default*/
+			}else if(param->type==1){
+				int bitRate = param->bitRate;
+				int timeScale = param->timeScale;
+				int sampleRate = param->sampleRate;
+				track = MP4AddAudioTrack(file,timeScale,timeScale/sampleRate);
+				sampleDuration[i] = timeScale/sampleRate;
+			}else{
+				//*****************************//
+			}
+			trackID[i]=track;
+		}
+		MP4SetVideoProfileLevel(file, 0x7F);
+		//write sps pps
+		if(indexFile != 1){
+				MP4WriteSample(file,trackID[0],frameHead,lenSps+lenPps);
+//				td_printf("head -----len ====%d-------\n",lenSps+lenPps);
+			}
+		//td_printf("---------------------------a-begin-------\n");
+		int countPreFile[MAX_COUNT_SAMPLE] ={0};
+		while(NotComplete(trackFinsh,handler->countTrack)){
+				for(int i=0;i<handler->countTrack;i++){
+
+					if(trackFinsh[i])
+						continue;
+					len = handler->bufferS[i]->read(&sample);
+					uint8_t type = sample[4];
+					if(type!=0){
+					}
+					if((countPreFile[i])*(sampleDuration[i]) >= handler->paramS[i]->duration){
+						//保证下一个文件视频track 从I FRAME开始
+						if(handler->paramS[i]->type == 0){
+							if(type==0x65){
+								handler->bufferS[i]->writeBack(sample,len);
+								trackFinsh[i] =true;
+								continue;
+							}
+
+						}else{
+							trackFinsh[i] = true;
+								continue;
+						}
+
+					}
+
+					MP4WriteSample(file,trackID[i],sample,len);
+					delete sample;
+					if(type==0){
+					indexSample[i]++;
+					countPreFile[i]++;
+					}else{
+						indexSample[i]+=1024;
+						countPreFile[i]+=1024;
+					}
+				}
+		}
+		MP4Close(file);
+	}
+	return NULL;
+}
+
+/**
+ *
+ */
+unsigned long long aacIndex = 0;
+int encIndex = 0;
+void* aacEncodeThread(void* param){
+	/**
+	 *
+	 */
+	FILE* aacfile = fopen("/mnt/sdcard/seraphim/t2.aac","wb+");
+
+	//
+	ThreadParam *h =(ThreadParam*)param;
+	//default get trackID =1 ;
+	QTrackParam *trackParam= h->paramS[1];
+	if(trackParam->type ==1){
+		QAudioTrackParam *audioP = (QAudioTrackParam*)trackParam;
+		unsigned long sampleRate = audioP->sampleRate;
+		unsigned long bitRate = audioP->bitRate;
+		int numChannels = 1;
+		unsigned long inputBuffSize;
+		unsigned long outBuffSize;
+
+		faacEncHandle aacHandler = faacEncOpen(sampleRate,numChannels,&inputBuffSize,&outBuffSize);
+		faacEncConfigurationPtr conf = faacEncGetCurrentConfiguration(aacHandler);
+		conf->bitRate = 32000;
+		conf->inputFormat = FAAC_INPUT_16BIT;
+		conf->mpegVersion = MPEG4;
+		td_printf("----aac config  [bitRate =%d,sampleRate=%d]----\n",conf->bitRate,sampleRate);
+		faacEncSetConfiguration(aacHandler,conf);
+		SyncBuffer *pcmBuffer = h->pcmBuffer;
+		uint8_t* pcm;
+		SyncBuffer *aacBuffer = h->bufferS[1];
+		if(pcmBuffer == NULL || aacBuffer ==NULL){
+			__android_log_write(ANDROID_LOG_ERROR,"com.seraphim.td","pcmBuffer ===  NULL");
+			return 0;
+		}
+		int len=-1;
+		uint8_t *l_sample=new uint8_t[1024];
+		size_t enc_len;
+		while((len = pcmBuffer->read(&pcm)) != -1){
+			int pcmOffset;
+			for(pcmOffset=0;pcmOffset<len;pcmOffset+=1024*2){
+				td_printf("BEGIN----pcmOffset = %d   len =%d-------enceNCODE  index =%d----\n",pcmOffset,len,encIndex++);
+				enc_len = faacEncEncode(aacHandler,(int32_t*)(pcm+pcmOffset),1024,l_sample,1024);
+				td_printf("-----------------------enceNCODE --------------------------\n");
+				if(enc_len <=0){
+					td_printf("------------enc_len==0---------------\n");
+					continue;
+				}
+				uint8_t* l_b = new uint8_t[enc_len];
+				memcpy(l_b,l_sample,enc_len);
+				aacBuffer->write23(l_b,enc_len);
+//				fwrite(l_b,1,enc_len,aacfile);
+//				fflush(aacfile);
+
+			}
+			td_printf("--------------------------------------------------------------------------------------------------\n");
+			delete pcm;
+//			td_printf("---------encEncode begin---- len =%d----\n",len);
+//			enc_len = faacEncEncode(aacHandler,(int32_t*)pcm,1024,l_sample,1024);
+//			td_printf("---------encEncode end--------\n");
+//			if(enc_len <=0){
+//				td_printf("------------enc_len==0---------------\n");
+//				continue;
+//			}
+//			uint8_t* l_b = new uint8_t[enc_len];
+//			memcpy(l_b,l_sample,enc_len);
+//			aacBuffer->write23(l_b,enc_len);
+//			fwrite(l_b,1,enc_len,aacfile);
+//			fflush(aacfile);
+//			td_printf("--add aac sample =%llu--------\n",aacIndex++);
+		}
+	}
+	return 0;
+}
+/**
+ *
+ */
+faacEncHandle aacHandler = NULL;
+void faacInit(){
+	const unsigned long sampleRate = 44100;
+	const unsigned int numChannels =1;
+	unsigned long  inputBuffSize ;
+	unsigned long  outButffSize;
+	aacHandler = faacEncOpen(sampleRate,numChannels,&inputBuffSize,&outButffSize);
+	faacEncConfigurationPtr conf = faacEncGetCurrentConfiguration(aacHandler);
+	//conf->aacObjectType = 0;
+	//conf->allowMidside = 0;
+	//conf->bandWidth = 0;
+	conf->bitRate = 128000;
+	//conf->channel_map = 0;
+	//conf->copyright = 0;
+	conf->inputFormat = FAAC_INPUT_16BIT;
+	conf->mpegVersion = MPEG4;
+	//conf->name = 0;
+	//conf->outputFormat = 0;
+	//conf->psymodelidx = 0;
+	//conf->psymodellist = 0;
+	//conf->quantqual = 0;
+	//conf->shortctl = 0;
+	//conf->useLfe = 0;
+	//conf->useTns = 0;
+	//conf->version =0;
+	faacEncSetConfiguration(aacHandler,conf);
+}
+/**
+ *
+ */
+void* testAAC(void* p){
+	FILE *inFile = fopen("/mnt/sdcard/seraphim/t4.pcm","rb");
+	FILE *outFile = fopen("/mnt/sdcard/seraphim/t4.aac","wb+");
+	int16_t *inBuff = new int16_t[1024];
+	uint8_t  *outBuff = new uint8_t[2048];
+	faacInit();
+//	assert(aacHandler);
+	size_t lenRead = -1;
+	size_t lenWrite= -1;
+	int index = 0;
+	__android_log_write(ANDROID_LOG_ERROR,"com.seraphim.td.nativ","begin");
+	do{
+
+		lenRead = fread(inBuff,sizeof(int16_t),1024,inFile);
+		memset(outBuff,0,2048);
+		td_printf("-----------------begin encode------- index=%d  --------------\n",index++);
+		lenWrite = faacEncEncode(aacHandler,(int32_t*)inBuff,1024,outBuff,2048);
+		td_printf("-----------------end encode---------------------\n");
+//		cout<<"encode len = "<<lenWrite<<endl;
+		if(lenWrite == 0){
+			continue;
+		}else if(lenWrite <0){
+//			cout<<"----------ERROR--------"<<endl;
+				break;
+		}
+		fwrite(outBuff,1,lenWrite,outFile);
+	}while(lenRead ==1024);
+	fflush(outFile);
+	fclose(outFile);
+	fclose(inFile);
+	__android_log_write(ANDROID_LOG_ERROR,"com.seraphim.td.nativ","compile");
+}
+
+
+
+//FILE* aacFile = NULL;
+JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1add
+  (JNIEnv *env, jobject obj , jbyteArray sample,jint offset , jint len,jint trackID){
+	static int g_index = 0;
+	jbyte* l_data = (jbyte*)env->GetByteArrayElements(sample, 0);
+	uint8_t* data = new uint8_t[len];
+	memcpy(data,(uint8_t*)l_data,len);
+	if(data==NULL){
+		td_printf("----------------t0-----------------\n");
+		return;
+	}
+	if(trackID==0&&!hasPPS){
+		uint8_t *s_pps = NULL;
+		uint8_t	*s_sps =NULL;
+		uint8_t *p;
+		p =data;
+		while(p<data+len){
+		//td_printf("----------------t1-----------------\n");
+			if(*p==0x00 && *(p+1)==0x00 && *(p+2)==0x00 && *(p+3)==0x01){
+			//td_printf("----------------t2-----------------\n");
+				if(s_pps == NULL || s_sps==NULL){
+					//td_printf("----------------t3-----------------\n");
+					if(*(p+4)==0x67)
+					{
+						s_pps = p;
+					}else if(*(p+4)==0x68){
+						s_sps = p;
+					}
+				}else{
+
+					//td_printf("----------------t4-----------------\n");
+					lenPps = s_sps > s_pps? s_sps - s_pps:p-s_pps;
+					lenSps=  s_pps > s_sps? s_pps-  s_sps:p - s_sps;
+					sps = new uint8_t[lenSps];
+					pps = new uint8_t[lenPps];
+					frameHead = new uint8_t[lenSps+lenPps];
+					memcpy(frameHead,s_sps,lenSps);
+					memcpy(frameHead+lenSps,s_pps,lenPps);
+					const  char * fragment = "pps sps ------";
+					UUSee_Printf_Hex(fragment,(unsigned short)(lenSps+lenPps),(const unsigned char*)frameHead);
+					hasPPS =true;
+					break;
+				}
+			}
+		p++;
+		}
+
+
+	}
+
+	//td_printf("------add  sample  trackID_index =%d----len=%d--\n ",trackID,len);
+	if(trackID==1){
+//		uint8_t* l_data;
+//		size_t l_len = adtsHelp->adts_write_frame_header(&l_data,data,len);
+//		delete data;
+//		data = l_data;
+//		int d0 = data[0];
+//		fwrite((void*)data,1,l_len,aacFile);
+//		td_printf("------audio head 0=%d  -----len=%d-l_len=%d---------\n",d0,len,l_len);
+//		len = l_len;
+	}
+	handler->bufferS[trackID]->write23(data,len);
+	env->ReleaseByteArrayElements(sample,l_data,0);
+
+}
+
+JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
+(JNIEnv *env, jobject obj, jint sampleFile, jstring baseName, jint countTrack, jobjectArray params){
+	/**/
+//	 aacFile = fopen("/mnt/sdcard/seraphim/test.aac","wb+");
+	 /**/
+	int i = 0;
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+	jclass c_track = env->FindClass("com/seraphim/td/omx/QTrackParam");
+	if(c_track == NULL){
+		return ;
+	}
+	jfieldID f_t_type = env->GetFieldID(c_track,"type","I");
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+	jclass c_aTrack = env->FindClass("com/seraphim/td/omx/QAudioTrackParam");
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+	jfieldID f_a_timeScale = env->GetFieldID(c_aTrack,"timeScale","I");
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+	jfieldID f_a_bitRate = env->GetFieldID(c_aTrack,"bitRate","I");
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+	jfieldID f_a_sampleRate = env->GetFieldID(c_aTrack,"sampleRate","I");
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+	jfieldID f_a_duration = env->GetFieldID(c_aTrack,"duration","I");
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+	jfieldID f_a_renderingOffset = env->GetFieldID(c_aTrack,"renderingOffset","I");
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+	jclass c_vTrack = env->FindClass("com/seraphim/td/omx/QVideoTrackParam");
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+	jfieldID f_v_timeScale = env->GetFieldID(c_vTrack,"timeScale","I");
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+	jfieldID f_v_width = env-> GetFieldID(c_vTrack,"width","I");
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+	jfieldID f_v_height = env->GetFieldID(c_vTrack,"height","I");
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+	jfieldID f_v_bitRate = env->GetFieldID(c_vTrack,"bitRate","I");
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+	jfieldID f_v_sampleRate = env->GetFieldID(c_vTrack,"sampleRate","I");
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+	jfieldID f_v_duration = env->GetFieldID(c_vTrack,"duration","I");
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+	jfieldID f_v_renderingOffset = env->GetFieldID(c_vTrack,"renderingOffset","I");
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+	int l_count = countTrack;
+	const char* l_str = env->GetStringUTFChars(baseName,JNI_FALSE);
+	int l_sampleFile = sampleFile;
+	handler = new ThreadParam;
+	SyncBuffer **l_buf_s = (SyncBuffer**)malloc(sizeof(SyncBuffer*)*l_count);
+	QTrackParam** l_par_s = (QTrackParam**)malloc(sizeof(QTrackParam*)*l_count);
+	handler->countTrack = l_count;
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+	handler->mp4BaseName =l_str;
+	handler->bufferS = l_buf_s;
+	handler->paramS = l_par_s;
+	handler->sampleFile = l_sampleFile;
+
+	int i2;
+	for(i2 = 0;i2<handler->countTrack;i2++){
+		jobject obj = env->GetObjectArrayElement(params,i2);
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+		int type = env->GetIntField(obj,f_t_type);
+		QTrackParam* l_track;
+		/**
+		 *
+		 */
+		if(type == 0){
+			int timeScale = env->GetIntField(obj,f_v_timeScale);
+	td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init--------------%d-----------------------------------------\n",i++);
+			int width = env->GetIntField(obj,f_v_width);
+			int height = env->GetIntField(obj,f_v_height);
+			int bitRate = env->GetIntField(obj,f_v_bitRate);
+			int sampleRate = env->GetIntField(obj,f_v_sampleRate);
+			int duration =env->GetIntField(obj,f_a_duration);
+			int renderingOffset = env->GetIntField(obj,f_a_renderingOffset);
+			//td_printf("--------------------f---------------------\n");
+			//td_printf("video param : [timeScale=%d,width=%d,height=%d,bitRate=%d,sampleRate=%d,duration=%d]\n",timeScale,width,height,bitRate,sampleRate,duration);
+			l_track = new QVideoTrackParm(timeScale,width,height,bitRate,sampleRate,duration,renderingOffset);
+
+		}else if(type == 1){
+			int timeScale = env->GetIntField(obj,f_a_timeScale);
+			int bitRate = env->GetIntField(obj,f_a_bitRate);
+			int sampleRate = env->GetIntField(obj,f_a_sampleRate);
+			int duration =env->GetIntField(obj,f_a_duration);
+			int renderingOffset = env->GetIntField(obj,f_a_renderingOffset);
+			//td_printf("audio param : [timeScale=%d,bitRate=%d,sampleRate=%d,duration=%d]\n",timeScale,bitRate,sampleRate,duration);
+			l_track = new QAudioTrackParam(timeScale,bitRate,sampleRate,duration,renderingOffset);
+		}else{
+			//ERROR
+		}
+		handler->bufferS[i]=new SyncBuffer;
+		handler->paramS[i] = l_track;
+		td_printf("------Java_com_seraphim_td_nativ_QMP4Creater_n_1init----------OKKKKKKKKK---\n");
+	}
+//	adtsHelp = new AdtsHelp(LC,HZ44100);
+	pthread_t tid;
+	pthread_create(&tid,NULL,create_mp4,(void*)handler);
+	handler->pcmBuffer = new SyncBuffer;
+	pthread_t aac_tid;
+	pthread_create(&aac_tid,NULL,aacEncodeThread,(void*)handler);
+//	pthread_create(&aac_tid,NULL,testAAC,(void*)handler);
+	// acc soft encodec
+}
+
+
+
+JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1stop
+  (JNIEnv *env, jobject obj){
+//  handle->buffS->disable();
+  };
+JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_log
+  (JNIEnv *env, jclass clazz, jstring msg){
+	const char* c_msg = env->GetStringUTFChars(msg,JNI_FALSE);
+	td_printf("--JAVA MSG %s---\n",c_msg);
+}
+JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1AddSpsPps
+  (JNIEnv *env, jobject obj, jbyteArray pps, jint lsn_pps, jbyteArray sps, jint len_sps){
+
+}
+
+
+/**
+ *
+ */
+JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_FAACNative_faacInit
+  (JNIEnv *env, jclass clazz, jint aacObjType , jint sampleRate, jint bitRate, jint MPEGVesrsion, jint inputFormat){
+//	const unsigned long sampleRate = 44100;
+//	const unsigned int numChannels =1;
+//	unsigned long  inputBuffSize ;
+//	unsigned long  outButffSize;
+//	aacHandler = faacEncOpen(sampleRate,numChannels,&inputBuffSize,&outButffSize);
+//	faacEncConfigurationPtr conf = faacEncGetCurrentConfiguration(aacHandler);
+//	conf->bitRate = bitRate;
+//	conf->inputFormat = inputFormat;
+//	conf->mpegVersion = MPEGVesrsion;
+//	faacEncSetConfiguration(aacHandler,conf);
+}
+
+/*
+ * Class:     com_seraphim_td_nativ_FAACNative
+ * Method:    addPCMSample
+ * Signature: ([B)V
+ */
+unsigned long long pcmIndex=0;
+JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_FAACNative_addPCMSample
+  (JNIEnv *env, jclass clazz, jbyteArray sample,jint len){
+	if(handler->pcmBuffer == NULL){
+		td_printf("---IN addPCMSample-----     pcmBuffer == NULL               --------------\n");
+	}
+	int i;
+	jbyte* l_data = (jbyte*)env->GetByteArrayElements(sample, 0);
+	uint8_t* data = new uint8_t[len];
+	memcpy(data,l_data,len);
+	handler->pcmBuffer->write23(data,len);
+//	td_printf("------------add a pcm = %llu--   le = %d----------------------\n",pcmIndex++,len);
+	env->ReleaseByteArrayElements(sample,l_data,0);
+}
+
+/************************/
+/**
+ *
+ */
+
+void* create_mp42(void* param){
+//	ThreadParam2 *p = (ThreadParam2 *)param;
+//	SyncBuffer *syncBuff = p->buffS;
+//	const int sizeFile = p->framePreFile;
+//	const char* baseName = p->mp4BaseName;
+//	const int widht = p->width;
+//	const int height = p->height;
+//	const int sampleRate = p->bitRate;
+//	const int timeScale = p->timeScale;
+//	FILE * tf  = NULL;
+//	char name[256]={0};
+//	uint8_t* frame = NULL;
+//	int indexFile = 1;
+//	int len = -1;//־
+//	while(true){
+//		int indexFramed = 0;
+//		memset(name,0,256);
+//		sprintf(name,baseName,indexFile++);
+//		MP4FileHandle file = MP4CreateEx(name, MP4_DETAILS_ALL, 0, 1, 1, 0, 0, 0, 0);//
+//		MP4SetTimeScale(file,timeScale);
+//		MP4TrackId video = MP4AddH264VideoTrack(file,timeScale,timeScale/sampleRate/*sampleDuration*/,widht,height,0x64,0x00,0x1f,3);/*other param is default*/
+//		MP4SetVideoProfileLevel(file, 0x7F);
+//		td_printf("---------begin mp4 %s------%d-----\n",name,indexFile);
+//		if(indexFile != 1){
+//
+//			MP4WriteSample(file,video,frameHead,lenSps+lenPps);
+//			td_printf("head -----len ====%d-------\n",lenSps+lenPps);
+//			for(int i = 0;i<lenSps+lenPps;i++){
+//				uint8_t t = frameHead[i];
+//				td_printf("----head index = %d data = %u-----\n",i,t);
+//			}
+//		}
+//		while(((len = syncBuff->read(&frame)) != -1)){// && (indexFramed++ < sizeFile)){
+//			indexFramed++;
+//			uint8_t type = frame[4];
+//			if(type!=0){
+//
+//			}
+//			if(indexFramed>sizeFile && type==0x65)
+//			{
+//				syncBuff->writeBack(frame,len);
+//				break;
+//			}else{
+//				MP4WriteSample(file,video,frame,len);
+//				td_printf("----add frame index=%u  ---size=%d---\n",countFrame++,len);
+//				delete frame;
+//			}
+//
+//
+//		};
+//		MP4Close(file);
+//		td_printf("-------end mp4 %s--------------\n",name);
+//		if(len == -1)
+//			break;
+//	};
+//	return NULL;
+}
+
+/**
+ *
+ */
+JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init2
+(JNIEnv *env, jobject obj, jint numFrame, jstring baseName, jint width, jint height, jint bitRate, jint timeScale){
+//	const char* l_str = env->GetStringUTFChars(baseName,JNI_FALSE);
+//	hasPPS= false;
+//	pps = NULL;
+//	lenPps=0;
+//	sps = NULL;
+//	lenSps=0;
+//	char msg[512] ={};
+//	handle = new ThreadParam2;
+//  	SyncBuffer *syncBuff = new SyncBuffer;
+//	handle->mp4BaseName = (char*)l_str;
+//	handle->buffS = syncBuff;
+//	handle->framePreFile = numFrame;
+//	handle->width = width;
+//	handle->height = height;
+//	handle->bitRate = bitRate;
+//	handle->timeScale = timeScale;
+//	sprintf(msg,"-init  numFrame=%d,baseName=%s,width=%d,height=%d,bitRate=%d,timeScale=%d--\n",numFrame,l_str,width,height,bitRate,timeScale);
+//	pthread_t tid;
+//	pthread_create(&tid,NULL,create_mp42,(void*)handle);
+};
+
+};
+
