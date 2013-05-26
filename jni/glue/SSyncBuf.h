@@ -4,7 +4,7 @@
 #define MAX_WAIT_COUNT  10
 
 extern"C"{
-#include"pthread.h""
+#include<pthread.h>
 #include<stdint.h>
 };
 #include<deque>
@@ -20,8 +20,9 @@ namespace Seraphim{
 		deque<uint8_t*> d_buf;
 		deque<int>		size_buf;
 		bool endFlg;
+		void show();
 	public:
-		void write23(uint8_t* src,size_t size);
+		void write(uint8_t* src,size_t size);
 		int	 read(uint8_t** dst); 
 		void disable();
 		void writeBack(uint8_t* data,size_t size);

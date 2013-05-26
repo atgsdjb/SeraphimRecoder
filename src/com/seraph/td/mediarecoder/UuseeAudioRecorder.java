@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.seraphim.td.nativ.FAACNative;
+import com.seraphim.td.nativ.QMP4Creater;
 import com.seraphim.td.omx.QCodecSink;
 import com.seraphim.td.omx.QFileSink;
 import com.seraphim.td.omx.QSink;
@@ -29,6 +30,7 @@ public class UuseeAudioRecorder  {
 	private QCodecSink aacEncoder;
 	private QSink mQSink;
 	
+	private boolean usedSoft;
 	private int audioSource = MediaRecorder.AudioSource.MIC;
 	private int sampleRateInHz = 44100;
 	private int channelConfig = AudioFormat.CHANNEL_IN_MONO;
@@ -42,16 +44,20 @@ public class UuseeAudioRecorder  {
 		public void run() {
 			// TODO Auto-generated method stub
 			mAudioRecord.startRecording();
-//			while(runFlg){
-				record();
+			record();
 //			}
 			mAudioRecord.stop();
 		}
 		
 	};
+	public UuseeAudioRecorder(Context context,QMP4Creater sink,boolean usedSoft){
+		mContext = context;
+		initRecoder();
+		this.usedSoft = usedSoft;
+		this.mQSink = sink;
+	}
 	public UuseeAudioRecorder(Context context,QSink sink){
 		mContext = context;
-		
 		initRecoder();
 		mQSink = sink;
 		createCodec();
@@ -64,10 +70,8 @@ public class UuseeAudioRecorder  {
 		createCodec();
 	}
 	private void initRecoder(){
-//		initFileForTest();
 		bufferSizeB = AudioRecord.getMinBufferSize(sampleRateInHz, channelConfig, audioFormat);
 		mAudioRecord = new AudioRecord(audioSource, sampleRateInHz, channelConfig, audioFormat, bufferSizeB);
-//		readBuf = new byte[bufferSizeB *8];
 		readBuf = new byte[1024*2];
 	}
 	
@@ -81,8 +85,6 @@ public class UuseeAudioRecorder  {
 			format.setInteger(MediaFormat.KEY_SAMPLE_RATE, 44100);
 			format.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC);
 			aacEncoder = new QCodecSink("audio/mp4a-latm", format,1, file);
-//			aacEncoder
-//			aacEncoder  = new QFileSink(Environment.getExternalStorageDirectory().getPath()+"/seraphim/seraphim.pcm");
 		}catch(Exception e){
 			Log.e(TAG,"create AACEncoder exception"+e.getMessage());
 		}
@@ -90,7 +92,10 @@ public class UuseeAudioRecorder  {
 
 	public void startRecord(){
 		runFlg = true;
-		aacEncoder.start();
+		if(aacEncoder !=null && !usedSoft){
+			aacEncoder.start();
+		}
+		
 		workTask.start();
 	}
 	
@@ -108,21 +113,33 @@ public class UuseeAudioRecorder  {
 	/**
 	 * 
 	 */
+	
 	@SuppressWarnings("unused")
 	private void record(){
 		mAudioRecord.startRecording();
 		int channelCount = mAudioRecord.getChannelCount();
-//		mAudioRecord.
+		QMP4Creater creater = null;
+		if(usedSoft){
+			if(mQSink instanceof QMP4Creater){
+				creater = (QMP4Creater)mQSink;
+			}
+		}
 		
 		while(runFlg){
 			int len = mAudioRecord.read(readBuf, 0, readBuf.length);	
-			try {
-				aacEncoder.write(readBuf, 0, readBuf.length, 1);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if(usedSoft){
+				creater.addPCM(readBuf, 0, len);
+//				Log.e("com.seraphim.td.nativ","add PCM");
+			}else{
+				
+				try {
+					aacEncoder.write(readBuf, 0, readBuf.length, 1);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				FAACNative.addPCMSample(readBuf, len);
 			}
-			FAACNative.addPCMSample(readBuf, len);
 		}
 	}
 	/**
@@ -151,6 +168,12 @@ public class UuseeAudioRecorder  {
 	@SuppressWarnings("unused")
 	private void record2(){
 		File file = new File(Environment.getExternalStorageDirectory().getPath()+"/seraphim/t4.pcm");
+		QMP4Creater creater = null;
+		if(usedSoft){
+			if(mQSink instanceof QMP4Creater){
+				creater = (QMP4Creater)mQSink;
+			}
+		}
 		OutputStream out;
 
 		try{
@@ -165,7 +188,8 @@ public class UuseeAudioRecorder  {
 				Log.e(TAG,"BEGIN read index sample'S  " +"\t index =" +index);
 				len = mAudioRecord.read(readBuf, 0, readBuf.length);
 				Log.e(TAG,"END   read index sample'S len = "+ len +"\t index =" +index);
-				index++;
+//				index++;
+				creater.addPCM(readBuf, 0, len);
 				out.write(readBuf, 0, len);
 				out.flush();
 			}

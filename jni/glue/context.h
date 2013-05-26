@@ -37,7 +37,7 @@ extern SEncoderContext* context;
 
 void* workTask(void*);
 void* aacTask(void*);
-void* avcTask(void*);
-void* readPCM(void* /*pram*/);
+//void* avcTask(void*);
+//void* readPCM(void* /*pram*/);
 
 #endif

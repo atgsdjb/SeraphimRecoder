@@ -12,7 +12,18 @@ public class QMP4Creater implements QSink {
 	public QMP4Creater(int sampleFile,String baseName,int countTrack,QTrackParam[] parms){
 		n_init(sampleFile,baseName,countTrack,parms);
 	}
-	
+	public void addPCM(byte[] pcm,int offset,int len){
+		n_addPCM(pcm);
+	}
+	public void addYUV(byte[] yuv,int offset,int len){
+		
+	}
+	public void addPPS(byte[] pps,int len){
+		n_addPPS(pps,len);
+	}
+	public void addSPS(byte[] sps,int len){
+		n_addSPS(sps,len);
+	}
 	/**
 	 * 
 	 * @param data
@@ -25,14 +36,14 @@ public class QMP4Creater implements QSink {
 	@Override
 	public boolean write(byte[] data, int offset, int len,int trackID) throws IOException {
 		// TODO Auto-generated method stub
-		n_add(data,offset,len,trackID);
+		n_addSample(data,offset,len,trackID);
 		return false;
 	}
 
 	@Override
 	public void close() {
 		// TODO Auto-generated method stub
-		n_stop();
+//		n_stop();
 	}
 
 	@Override
@@ -49,9 +60,10 @@ public class QMP4Creater implements QSink {
 	const timeScale = p->timeScale;
  * @param sample
  */
-	native void n_AddSpsPps(byte[] pps,int lenPps,byte[] Sps,int lenSps);
-	native void n_add(byte[] sample,int offset ,int len,int trackID);
 	native void n_init(int samplleFile,String baseName,int countTrack,QTrackParam[] parms);
-	native void n_stop();
-	public static native void log(String str);
+	native void n_addSample(byte[] data,int offset,int len,int trackIndex);
+	native void n_addPPS(byte[] data,int len);
+	native void n_addSPS(byte[] data,int len);
+	native void n_addPCM(byte[] data);
+	native void n_addYUV(byte[] data);
 }

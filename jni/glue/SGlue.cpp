@@ -11,7 +11,10 @@ extern"C"{
 #include"../x264/x264.h"
 #include"../aac/faac.h"
 #include"../aac/faaccfg.h"
+#include<jni.h>
+#include"us_log.h"
 };
+#include<android/log.h>
 using namespace std;
 using namespace Seraphim;
 
@@ -25,136 +28,220 @@ size_t g_lenSPS;
 /*                                                                      */
 /************************************************************************/
 
-void initAAC(int trackIndex,STrackParam* param){
+void initAAC(){
+	td_printf("---------initAAC-------\n");
 	//default get trackID =1 ;
-	STrackParam *trackParam = context->idAndParm[1];// h->paramS[1];
-	//if(trackParam->type ==1){
-		//SAudioTrackParam *audioP = (SAudioTrackParam*)trackParam;
-		//unsigned long sampleRate = 44100;//audioP->sampleRate;
-		//unsigned long bitRate = 32*1024;//audioP->bitRate;
-		//int numChannels = 1;
-		//unsigned long inputBuffSize;
-		//unsigned long outBuffSize;
-		//context->aacHandler = faacEncOpen(sampleRate,numChannels,&inputBuffSize,&outBuffSize);
-		//context->pcmBuf = new SSyncBuffer;
-		/*faacEncConfigurationPtr conf = faacEncGetCurrentConfiguration(context->aacHandler);
-		conf->bitRate = bitRate;
-		conf->inputFormat = FAAC_INPUT_16BIT;
-		conf->mpegVersion = MPEG4;
-		conf->aacObjectType == LOW;
-		faacEncSetConfiguration(context->aacHandler,conf);*/
-	//}
-}
-/************************************************************************/
-/*                                                                      */
-/************************************************************************/
-static void initParam(x264_param_t* pX264Param,SVideoTrackParm* videoParam){
-	pX264Param->i_threads = X264_SYNC_LOOKAHEAD_AUTO;	//* ȡ�ջ��������ʹ�ò�����ı�֤.//* video Properties
-	pX264Param->i_frame_total = 0;						//* ������֡��.��֪����0.
-	pX264Param->i_keyint_max = 10;	
-	pX264Param->i_bframe = 5;
-	pX264Param->b_open_gop = 0;
-	pX264Param->i_bframe_pyramid = 0;
-	pX264Param->i_bframe_adaptive = X264_B_ADAPT_TRELLIS;
-	pX264Param->b_annexb = 1;
-	pX264Param->i_log_level = X264_LOG_NONE;
-	pX264Param->rc.i_bitrate = videoParam->bitRate;//1024 * 500;				//* ����(������,��λKbps), muxing parameters
-	pX264Param->i_fps_den = 1;							//* ֡�ʷ�ĸ
-	pX264Param->i_fps_num = 25;							//* ֡�ʷ���
-	pX264Param->i_timebase_den = pX264Param->i_fps_num;
-	pX264Param->i_timebase_num = pX264Param->i_fps_den;
-	pX264Param->i_width = videoParam->width;
-	pX264Param->i_height=videoParam->height;
-	//pX264Param->i_threads = X264_SYNC_LOOKAHEAD_AUTO;	//* ȡ�ջ��������ʹ�ò�����ı�֤.//* video Properties
-	//pX264Param->i_frame_total = 0;						//* ������֡��.��֪����0.
-	//pX264Param->i_keyint_max = 10;	
-	//pX264Param->i_bframe = 5;
-	//pX264Param->b_open_gop = 0;
-	//pX264Param->i_bframe_pyramid = 0;
-	//pX264Param->i_bframe_adaptive = X264_B_ADAPT_TRELLIS;
-	//pX264Param->b_annexb = 1;
-	//pX264Param->i_log_level = X264_LOG_NONE;
-	//pX264Param->rc.i_bitrate = 1024 * 500;				//* ����(������,��λKbps), muxing parameters
-	//pX264Param->i_fps_den = 1;							//* ֡�ʷ�ĸ
-	//pX264Param->i_fps_num = 25;							//* ֡�ʷ���
-	//pX264Param->i_timebase_den = pX264Param->i_fps_num;
-	//pX264Param->i_timebase_num = pX264Param->i_fps_den;
-	//pX264Param->i_width = width;
-	//pX264Param->i_height=height;
-}
-
-/************************************************************************/
-/*                                                                      */
-/************************************************************************/
-
-void initAVC(int trackIndex,SVideoTrackParm* videoParam){
-	//default trackId = 0;
-	x264_param_t *param= new x264_param_t;
-	x264_param_default(param);
-	//initParam(param,352,288);
-	initParam(param,videoParam);
-	x264_t* pX264Handle = x264_encoder_open (param);
-	context->x264Handler = pX264Handle;
-	x264_param_apply_profile (param, x264_profile_names[1]);
-	Yuv420 *yuv = new Yuv420(352,288,0,"D:\\1video\\test_w352_h288_f2000.yuv");
-	context->x264Handler = pX264Handle;
-	context->x264Param = param;
-	context->yuvData = yuv;
-	return ;
-}
-/************************************************************************/
-/*                                                                      */
-/************************************************************************/
-//#include<vector>
-//void init(char* baseName,uint8_t countTrack,vector<STrackParam*> paramS,bool videoSoftEncoded,bool audioSoftEncoded){
-//	g_lenPPS=-1;
-//	g_lenSPS=-1;
-//	g_PPS = 0;
-//	g_SPS = 0;
-//	context = new SEncoderContext;
-//	//audioId = 1, videoId =  0;
-//	context->baseName = "d:\\1video\\%4d.mp4";
-//	context->countTrack = countTrack;
-//	context->runing = true;
-//	for(int i =0;i<countTrack;i++){
-//		context->idAndBuf[i] = new SSyncBuffer;
-//		context->idAndNSample[i] = 0;
-//		context->idAndParm[i] =paramS[i];
-//		if(audioSoftEncoded && context->idAndParm[i]->type==1){
-//			initAAC(i,context->idAndParm[i]);
-//			pthread_t aTid;
-//			pthread_create(&aTid,NULL,aacTask,NULL);
-//		}
-//		if(videoSoftEncoded && context->idAndParm[i]->type == 0){
-//			SVideoTrackParm* param = (SVideoTrackParm*) context->idAndParm[i];
-//			initAVC(i,param);
-//			pthread_t vTid;
-//			pthread_create(&vTid,NULL,avcTask,NULL);
-//		}
+	unsigned long sampleRate = 44100;//audioP->sampleRate;
+	unsigned long bitRate = 32*1024;//audioP->bitRate;
+	int numChannels = 1;
+	unsigned long inputBuffSize;
+	unsigned long outBuffSize;
+	context->aacHandler = faacEncOpen(sampleRate,numChannels,&inputBuffSize,&outBuffSize);
+	context->pcmBuf = new SSyncBuffer;
+	pthread_t aacTid;
+	pthread_create(&aacTid,NULL,aacTask,NULL);
 //	}
-//	pthread_t tid ;
-//	pthread_create(&tid,NULL,workTask,NULL);
-//}
-//void addSample(uint8_t trackId,uint8_t* sample,size_t len){
-//
-//}
+}
+/**********************************************INTFACE */
 
-//
-//int main(int argc,char** argv){
-//	char baseName[]="d:\\1video\\%04d.mp4";
-//	STrackParam *v_param = new SVideoTrackParm(90000,352,288,1024 * 500,25,120*90000);
-//	STrackParam *a_param = new SAudioTrackParam(44100,128*1024,44100,120 * 44100);
-//	vector<STrackParam*> paramVect ;
-//	paramVect.push_back(v_param);
-//	paramVect.push_back(a_param);
-//	init(baseName,2,paramVect,true,true);
-//	pthread_t tid ;
-//	context->pcmBuf = new SSyncBuffer;
-//	pthread_create(&tid,NULL,readPCM,NULL);
-//	printf("-----seraphim--------\n");
-//
-//	int i;
-//
-//	cin>>i;
-//	return 0;
-//}
+extern "C" {
+/*
+ * Class:     com_seraphim_td_nativ_QMP4Creater
+ * Method:    n_init
+ * Signature: (ILjava/lang/String;I[Lcom/seraphim/td/omx/QTrackParam;)V
+ */
+JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
+(JNIEnv *env, jobject obj, jint countSample, jstring baseName, jint countTrack, jobjectArray trackParamS){
+	int i = 0;
+	jclass c_track = env->FindClass("com/seraphim/td/omx/QTrackParam");
+	if(c_track == NULL){
+		return ;
+	}
+	jfieldID f_t_type = env->GetFieldID(c_track,"type","I");
+	//QAudioTrakParam  class
+	jclass c_aTrack = env->FindClass("com/seraphim/td/omx/QAudioTrackParam");
+	jfieldID f_a_timeScale = env->GetFieldID(c_aTrack,"timeScale","I");
+	jfieldID f_a_bitRate = env->GetFieldID(c_aTrack,"bitRate","I");
+	jfieldID f_a_sampleRate = env->GetFieldID(c_aTrack,"sampleRate","I");
+	jfieldID f_a_duration = env->GetFieldID(c_aTrack,"duration","I");
+	jfieldID f_a_usedSoftEncode = env->GetFieldID(c_aTrack,"usedSoft","Z");
+	//QVideoTrackParam class
+	jclass c_vTrack = env->FindClass("com/seraphim/td/omx/QVideoTrackParam2");
+	jfieldID f_v_timeScale = env->GetFieldID(c_vTrack,"timeScale","I");
+	jfieldID f_v_width = env-> GetFieldID(c_vTrack,"width","I");
+	jfieldID f_v_height = env->GetFieldID(c_vTrack,"height","I");
+	jfieldID f_v_bitRate = env->GetFieldID(c_vTrack,"bitRate","I");
+	jfieldID f_v_sampleRate = env->GetFieldID(c_vTrack,"sampleRate","I");
+	jfieldID f_v_duration = env->GetFieldID(c_vTrack,"duration","I");
+	jfieldID f_v_usedSoftEncode = env->GetFieldID(c_vTrack,"usedSoft","Z");
+	context = new SEncoderContext;
+	const char* l_str = env->GetStringUTFChars(baseName,JNI_FALSE);
+	int l_sampleFile = countSample;
+	int i2;
+	for(i2 = 0;i2<countTrack;i2++){
+		jobject obj = env->GetObjectArrayElement(trackParamS,i2);
+		int type = env->GetIntField(obj,f_t_type);
+		STrackParam* l_track;
+		/**
+		 *
+		 */
+		if(type == 0){
+			int timeScale = env->GetIntField(obj,f_v_timeScale);
+			int width = env->GetIntField(obj,f_v_width);
+			int height = env->GetIntField(obj,f_v_height);
+			int bitRate = env->GetIntField(obj,f_v_bitRate);
+			int sampleRate = env->GetIntField(obj,f_v_sampleRate);
+			int duration =env->GetIntField(obj,f_v_duration);
+			bool usedSoft = env->GetBooleanField(obj,f_v_usedSoftEncode);
+			STrackParam *v_param = new SVideoTrackParm(90000,352,288,1024 * 500,25,20);
+			context->idAndParm[i2] = v_param;
+
+		}else if(type == 1){
+			int timeScale = env->GetIntField(obj,f_a_timeScale);
+			int bitRate = env->GetIntField(obj,f_a_bitRate);
+			int sampleRate = env->GetIntField(obj,f_a_sampleRate);
+			int duration =env->GetIntField(obj,f_a_duration);
+			bool usedSoft=env->GetBooleanField(obj,f_a_usedSoftEncode);
+
+			l_track = new SAudioTrackParam(timeScale,bitRate,sampleRate,duration,usedSoft);
+			if(usedSoft){
+				initAAC();
+			}
+			STrackParam *a_param = new SAudioTrackParam(441000,32*1024,44100,20 );
+			context->idAndParm[i2] = a_param;
+		}else{
+			//ERROR
+		}
+		context->idAndBuf[i2] = new SSyncBuffer;
+	}
+	char* name = new char[128];
+	strcpy(name,l_str);
+	context->baseName = name;
+	context->countTrack = countTrack;
+	context->duration = countSample;
+	context->runing = true;
+	pthread_t tid;
+	pthread_create(&tid,NULL,workTask,0);
+}
+
+/*
+ * Class:     com_seraphim_td_nativ_QMP4Creater
+ * Method:    n_addSample
+ * Signature: ([BI)V
+ */
+JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1addSample
+  (JNIEnv *env, jobject obj, jbyteArray sample ,jint offset,jint len, jint trackIndex){
+	static int g_index = 0;
+	jbyte* l_data = (jbyte*)env->GetByteArrayElements(sample, 0);
+	uint8_t* data = new uint8_t[len];
+	memcpy(data,(uint8_t*)l_data,len);
+	if(data==NULL){
+		td_printf("----------------t0-----------------\n");
+		return;
+	}
+	if(trackIndex==0 && (!g_PPS || !g_SPS)){
+		uint8_t *s_pps = NULL;
+		uint8_t	*s_sps =NULL;
+		uint8_t *p;
+		p =data;
+		while(p<data+len){
+			if(*p==0x00 && *(p+1)==0x00 && *(p+2)==0x00 && *(p+3)==0x01){
+				if(s_pps == NULL || s_sps==NULL){
+					//td_printf("----------------t3-----------------\n");
+					if(*(p+4)==0x67)
+					{
+						s_pps = p;
+					}else if(*(p+4)==0x68){
+						s_sps = p;
+					}
+				}else{
+
+					g_lenPPS = s_sps > s_pps? s_sps - s_pps:p-s_pps;
+					g_lenSPS=  s_pps > s_sps? s_pps-  s_sps:p - s_sps;
+					g_SPS = new uint8_t[g_lenSPS];
+					g_PPS = new uint8_t[g_lenPPS];
+					memcpy(g_SPS,s_sps,g_lenSPS);
+					memcpy(g_PPS,s_pps,g_lenPPS);
+					const  char * fragment = "pps sps ------";
+					break;
+				}
+			}
+		p++;
+		}
+	}
+	//td_printf("------------add sample trackIndex =%d-----addr=%p---len=%d------------\n",trackIndex,data,len);
+	env->ReleaseByteArrayElements(sample,l_data,0);
+	context->idAndBuf[trackIndex]->write(data,len);
+}
+
+/*
+ * Class:     com_seraphim_td_nativ_QMP4Creater
+ * Method:    n_addPCM
+ * Signature: ([B)V
+ */
+int pcmIndex=0;
+JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1addPCM
+  (JNIEnv *env, jobject obj, jbyteArray sample){
+	//td_printf("call add PCM\n");
+	if(context->pcmBuf!=NULL){
+		jsize  len = env->GetArrayLength(sample);
+		jbyte* l_data = (jbyte*)env->GetByteArrayElements(sample, 0);
+		uint8_t* data = new uint8_t[len];
+		memcpy(data,l_data,len);
+		context->pcmBuf->write(data,len);
+		env->ReleaseByteArrayElements(sample,l_data,0);
+	}else{
+		td_printf("pcmBuf=NULL \n");
+	}
+
+}
+
+/*
+ * Class:     com_seraphim_td_nativ_QMP4Creater
+ * Method:    n_addYUV
+ * Signature: ([B)V
+ */
+JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1addYUV
+ (JNIEnv *env, jobject obj, jbyteArray data){
+
+}
+/*
+ * Class:     com_seraphim_td_nativ_QMP4Creater
+ * Method:    n_addPPS
+ * Signature: ([BI)V
+ */
+JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1addPPS
+  (JNIEnv *env, jobject obj, jbyteArray pps , jint len){
+	log4("--------------add PPS 0--------------\n");
+	jsize  size = env->GetArrayLength(pps);
+	log4("--------------add PPS 1  size=%d--------------\n",size);
+	jbyte* l_data = (jbyte*)env->GetByteArrayElements(pps, 0);
+	g_PPS = new uint8_t[len];
+	g_lenPPS = len;
+	memcpy(g_PPS,l_data,len);
+	log4("add pps data[0]%x data[1]%x data[2]%x data[3]%x len=%d\n",g_PPS[0],g_PPS[1],g_PPS[2],g_PPS[3],len);
+	env->ReleaseByteArrayElements(pps,l_data,0);
+
+}
+
+/*
+ * Class:     com_seraphim_td_nativ_QMP4Creater
+ * Method:    n_addSPS
+ * Signature: ([BI)V
+ */
+JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1addSPS
+  (JNIEnv *env, jobject obj, jbyteArray sps, jint len){
+	jbyte* l_data = (jbyte*)env->GetByteArrayElements(sps, 0);
+	log4("--------------add SPS 0--------------\n");
+	jsize  size = env->GetArrayLength(sps);
+	log4("--------------add PPS 1  size=%d------len=%d--------\n",size,len);
+	g_SPS = new uint8_t[len];
+	log4("--------------add SPS 1--------------\n");
+	g_lenSPS = len;
+	log4("--------------add SPS 2--------------\n");
+	memcpy(g_SPS,l_data,len);
+	log4("--------------add SPS 0-------------len=%d--0=%x- 1=%x 2=%x 3=%x ---\n",len,g_SPS[0],g_SPS[1],g_SPS[2],g_SPS[3]);
+	env->ReleaseByteArrayElements(sps,l_data,0);
+}
+
+}

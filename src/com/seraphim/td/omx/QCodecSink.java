@@ -1,5 +1,7 @@
 package com.seraphim.td.omx;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -22,15 +24,26 @@ public class QCodecSink implements QSink{
 	private boolean isRun = false;
 	private int bufferMaxSize=500*1024;
 	private int mTrackID;
-//	private  int mFramePreFile;
-	static private final String BIND="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 	int t_index = 0;
+	OutputStream out=null;
+	String str="------------------------------------------";
+	byte[] band = str.getBytes();
 	private Runnable encodeTask = new Runnable() {
 		
 		@Override
 		public void run() {
 			byte[] outData = new byte[bufferMaxSize];
 			byte[] inData;
+//			OutputStream out=null;
+			String str="------------------------------------------";
+			byte[] band = str.getBytes();
+			try{
+				File file = new File("/mnt/sdcard/seraphim/test.h264");
+				file.deleteOnExit();
+				out = new FileOutputStream(file);
+			}catch(Exception e){
+				
+			}
 			while(isRun){
 				try{
 					
@@ -41,11 +54,8 @@ public class QCodecSink implements QSink{
 				
 				if(len <=0 || len >=bufferMaxSize)
 					continue;
-				Log.e(TAG,"add  a frame  index = "+indexOut+"\t len ="+ len);
 				mSink.write(outData, 0, len,mTrackID);
-				mSink.write(BIND.getBytes(),0,BIND.getBytes().length,mTrackID);
-//				QMP4Creater.log("--add frame ---- = "+indexOut+"-------");
-//				out.write(outData);
+				
 				}catch(Exception e){
 					Log.e(TAG,"error in task workThread");
 				}
@@ -60,7 +70,6 @@ public class QCodecSink implements QSink{
 		mTrackID = trackID;
 		mFormat = format;
 		initCodec(name);
-		start();
 	}
 	public QCodecSink(String type,MediaFormat format,int trackID,QSink sink) {
 		this.codecType = type;
@@ -69,7 +78,6 @@ public class QCodecSink implements QSink{
 		mSink = sink;
 		mTrackID = trackID;
 		initCodec();
-		start();
 	};
 	
 	private void initCodec(String name){
@@ -135,9 +143,10 @@ public class QCodecSink implements QSink{
 		// TODO Auto-generated method stub
 		
 	}
-private	long indexIn=0;
-private	long indexOut=0;
-	OutputStream l_out;
+	boolean notPPS = true;
+	boolean notSPS = true;
+	byte qPPS = 0x67;
+	byte qSPS = 0x68;
 	private int encodec2(byte[] dst,byte[] src){
 		int len = 0;
 		try{
@@ -150,37 +159,88 @@ private	long indexOut=0;
 			int indexOutput;
 			BufferInfo  info = new BufferInfo();
 			byte[] inData = src;// = buffer.poll();
-		
 			indexInput = codec.dequeueInputBuffer(-1);
 			if(indexInput >= 0){
 				 inputBuffer[indexInput].clear();
-				   inputBuffer[indexInput].put(inData);
-				   codec.queueInputBuffer(indexInput,0,inData.length,0,MediaCodec.BUFFER_FLAG_CODEC_CONFIG);
-				   //inData = null;
+				 inputBuffer[indexInput].put(inData);
+				 codec.queueInputBuffer(indexInput,0,inData.length,0,MediaCodec.BUFFER_FLAG_CODEC_CONFIG);
 			}
 			indexOutput = codec.dequeueOutputBuffer(info, 0);
-			if(indexOutput >=0){
-				indexOut++;
-			}else{
-//				Log.e(TAG,"empty out frame numOut = "+indexOut);
-			}
 			while(indexOutput>=0){
 				//get a nalu 
 				 int size_buf = info.size;
 				   byte[] h264 =  new  byte[size_buf];
+				   byte[] naluHead= new byte[4];
+				   /**
+				    * uint8_t	 naluHead[4]={0};
+					  uint32_t sizePayload = pNals[i].i_payload-3-pNals[i].b_long_startcode ;
+				      uint32_t naluSize = sizePayload +4 ;
+				      naluHead[0] = (sizePayload >> 24) & 0xff;
+				      naluHead[1] = (sizePayload >> 16) & 0xff;
+				      naluHead[2] = (sizePayload >> 8)  & 0xff;
+				      naluHead[3] = sizePayload & 0xff;
+				      if(g_PPS == NULL || g_SPS==NULL){
+						int len  = pNals[i].i_payload-3- pNals[i].b_long_startcode;
+						uint8_t  *l_bs = new uint8_t[len];
+						memcpy(l_bs,pNals[i].p_payload +3 +pNals[i].b_long_startcode ,len);
+					if(pNals[i].i_type == NAL_PPS){
+						g_PPS = l_bs;
+						g_lenPPS = len;
+					}else if(pNals[i].i_type == NAL_SPS){
+						g_SPS = l_bs;
+						g_lenSPS = len;
+					}
+				}
+				    */
 				   outputBuffer[indexOutput].get(h264);
-				   for(int i = 0;i<info.size;i++){
+				   try{
+					  out.write(h264, 0, size_buf);
+					  out.write(band, 0, band.length);
+					  out.flush();
+					   
+				   }catch(Exception ee){
+					   
+				   }
+				   int i_long_startCode = h264[2]==0x01?0:1;
+				   int sizeHead = 3 +i_long_startCode;
+				   int sizePayload = size_buf-sizeHead;
+				   if(notPPS || notSPS){
+						   if(mSink instanceof QMP4Creater){
+						   byte[] sps = new byte[9];
+						   byte[] pps = new byte[4];
+						   for(int i=0;i<9;i++){
+							   sps[i] = h264[4+i];
+						   }
+						   for(int i =0 ;i<4;i++){
+							   pps[i]=h264[16+i];
+						   }
+						   QMP4Creater creater =(QMP4Creater)mSink;
+						   creater.addSPS(sps, 9);
+						   creater.addPPS(pps, 4);
+						   notPPS = false;
+						   notSPS = false;
+					   }
+
+				   }
+				   dst[len++] = (byte)((sizePayload >> 24) & 0xff);
+				   dst[len++] = (byte)((sizePayload >> 16) & 0xff);
+				   dst[len++] = (byte)((sizePayload >> 8) & 0xff);
+				   dst[len++] = (byte)(sizePayload  & 0xff);
+				   for(int i = 0;i<sizePayload;i++){
 					   if(len <bufferMaxSize)
-					   dst[len++]  = h264[i];
+					   dst[len++]  = h264[i+sizeHead];
 					   else
 						   Log.e(TAG,"dst[] overflow len ="+len);
 				   }
+//				   for(int i = 0;i<info.size;i++){
+//				   if(len <bufferMaxSize)
+//				   dst[len++]  = h264[i];
+//				   else
+//					   Log.e(TAG,"dst[] overflow len ="+len);
+//			   }
 				 codec.releaseOutputBuffer(indexOutput, false);
 			     indexOutput = codec.dequeueOutputBuffer(info,100);
 			}
-	
-//			len--;
-			
 		}catch(Exception e){
 			Log.e(TAG,"exception in encode2 msg="+e.getMessage()+"");
 		}
@@ -265,3 +325,29 @@ private	long indexOut=0;
 //}
 //
 //};
+
+
+
+//					   int i=0;
+//					   if(h264[sizeHead] ==qSPS){
+//						   byte[] sps = new byte[sizePayload];
+//						   for(i = 0;i<sizePayload;i++){
+//							   sps[i] = h264[sizeHead+i];
+//						   }
+//						   notSPS = false;
+//						   if(mSink instanceof QMP4Creater){
+//							   QMP4Creater creater =(QMP4Creater)mSink;
+//							   creater.addSPS(sps, i);
+//						   }
+//						  
+//					   }else if(h264[sizeHead]==qPPS){
+//						   byte[] pps = new byte[sizePayload];
+//						   for( i = 0;i<sizePayload;i++){
+//							   pps[i] = h264[sizeHead+i];
+//						   }
+//						   if(mSink instanceof QMP4Creater){
+//							   QMP4Creater creater =(QMP4Creater)mSink;
+//							   creater.addPPS(pps, i);
+//						   }
+//						   notPPS = false;
+//					   }****/

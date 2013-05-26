@@ -6,7 +6,7 @@ import com.seraphim.td.omx.QAudioTrackParam;
 import com.seraphim.td.omx.QFileSink;
 import com.seraphim.td.omx.QSink;
 import com.seraphim.td.omx.QTrackParam;
-import com.seraphim.td.omx.QVideoTrackParam;
+import com.seraphim.td.omx.QVideoTrackParam2;
 
 import android.app.Activity;
 import android.media.MediaCodecInfo;
@@ -92,7 +92,7 @@ public class UuseeCameraActivity extends Activity  implements SurfaceHolder.Call
 		int videoWidth = widthVideo;
 		int videoRenderingOffset = 0;
 		int videoDuration = videoTimeScale * secDuration;
-		QVideoTrackParam videoTrack = new QVideoTrackParam(videoTimeScale, vieoBitRate, videoSampleRate,
+		QVideoTrackParam2 videoTrack = new QVideoTrackParam2(videoTimeScale, vieoBitRate, videoSampleRate,
 									videoDuration, videoRenderingOffset, videoWidth, videoHeight);
 		
 		/*************************************************/
@@ -106,12 +106,12 @@ public class UuseeCameraActivity extends Activity  implements SurfaceHolder.Call
 		params[0] = videoTrack;
 		params[1] = audioTrack;
 		mMp4Sink = new QMP4Creater(100,
-				Environment.getExternalStorageDirectory().getPath()+"/seraphim/uusee%05d.mp4",
+				Environment.getExternalStorageDirectory().getPath()+"/seraphim/uusee%03d.mp4",
 				2,params);
 		mUuseeCamera = new  UuseeCamera2(this, 0,videoWidth,videoHeight,mMp4Sink);
 		try{
 //		QFileSink fileSink = new QFileSink(Environment.getExternalStorageDirectory().getPath()+"/seraphim/test2.pcm");
-		audioRcoder = new UuseeAudioRecorder(this);
+		audioRcoder = new UuseeAudioRecorder(this,(QMP4Creater)mMp4Sink,true);
 		}catch(Exception e){
 			Log.e(TAG,""+e.getMessage());
 		}
@@ -138,12 +138,12 @@ public class UuseeCameraActivity extends Activity  implements SurfaceHolder.Call
 			if(holderIsCreate){
 				atPreview = true;
 				audioRcoder.startRecord();
-				//mUuseeCamera.startPreview();
+				mUuseeCamera.startPreview();
 			}
 		}
 		else{
 			mCtrlButton.setText("开始");
-			//if(holderIsCreate) mUuseeCamera.stopPreview();
+			if(holderIsCreate) mUuseeCamera.stopPreview();
 			audioRcoder.stopRecord();
 		}
 		mCtrlButton.invalidate();
@@ -151,7 +151,7 @@ public class UuseeCameraActivity extends Activity  implements SurfaceHolder.Call
 	//@Override
 	public void surfaceCreated(SurfaceHolder holder) {
 		// TODO Auto-generated method stub
-//		mUuseeCamera.setPreviewDisplay(holder);
+		mUuseeCamera.setPreviewDisplay(holder);
 		mCtrlButton.setEnabled(true);
 		if(atPreview) mCtrlButton.setText("停止");
 		else mCtrlButton.setText("开始");
@@ -203,6 +203,6 @@ public class UuseeCameraActivity extends Activity  implements SurfaceHolder.Call
 		mUuseeCamera.release();
 	}
 	static{
-		System.loadLibrary("tdcodec.01");
+		System.loadLibrary("tdcodec.02");
 	}
 }
