@@ -92,7 +92,7 @@ public class UuseeCameraActivity extends Activity  implements SurfaceHolder.Call
 		int videoWidth = widthVideo;
 		int videoRenderingOffset = 0;
 		int videoDuration = videoTimeScale * secDuration;
-		QVideoTrackParam2 videoTrack = new QVideoTrackParam2(videoTimeScale, vieoBitRate, videoSampleRate,
+		QVideoTrackParam videoTrack = new QVideoTrackParam(videoTimeScale, vieoBitRate, videoSampleRate,
 									videoDuration, videoRenderingOffset, videoWidth, videoHeight);
 		
 		/*************************************************/

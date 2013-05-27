@@ -1,13 +1,17 @@
 package com.seraphim.td.omx;
 
-public class QVideoTrackParam2 extends QTrackParam{
+public class QVideoTrackParam extends QTrackParam{
 	 int width;
 	 int height;
 	 int bitRate;
-	public QVideoTrackParam2(int timeScale, int bitRate, int sampleRate,
+	
+	
+	
+	
+	public QVideoTrackParam(int timeScale, int bitRate, int sampleRate,
 			int duration, int renderingOffset,   int width,
 			int height) {
-		super(0,timeScale, bitRate, sampleRate, duration, renderingOffset,false);
+		super(0,timeScale, bitRate, sampleRate, duration, renderingOffset);
 		this.width = width;
 		this.height = height;
 	}
