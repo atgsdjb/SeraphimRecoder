@@ -25,9 +25,9 @@ public class QCodecSink implements QSink{
 	private int bufferMaxSize=500*1024;
 	private int mTrackID;
 	int t_index = 0;
-	OutputStream out=null;
-	String str="------------------------------------------";
-	byte[] band = str.getBytes();
+//	OutputStream out=null;
+//	String str="------------------------------------------";
+//	byte[] band = str.getBytes();
 	private Runnable encodeTask = new Runnable() {
 		
 		@Override
@@ -36,14 +36,14 @@ public class QCodecSink implements QSink{
 			byte[] inData;
 //			OutputStream out=null;
 			String str="------------------------------------------";
-			byte[] band = str.getBytes();
-			try{
-				File file = new File("/mnt/sdcard/seraphim/test.h264");
-				file.deleteOnExit();
-				out = new FileOutputStream(file);
-			}catch(Exception e){
-				
-			}
+//			byte[] band = str.getBytes();
+//			try{
+//				File file = new File("/mnt/sdcard/seraphim/test.h264");
+//				file.deleteOnExit();
+//				out = new FileOutputStream(file);
+//			}catch(Exception e){
+//				
+//			}
 			while(isRun){
 				try{
 					
@@ -193,14 +193,14 @@ public class QCodecSink implements QSink{
 				}
 				    */
 				   outputBuffer[indexOutput].get(h264);
-				   try{
-					  out.write(h264, 0, size_buf);
-					  out.write(band, 0, band.length);
-					  out.flush();
-					   
-				   }catch(Exception ee){
-					   
-				   }
+//				   try{
+//					  out.write(h264, 0, size_buf);
+//					  out.write(band, 0, band.length);
+//					  out.flush();
+//					   
+//				   }catch(Exception ee){
+//					   
+//				   }
 				   int i_long_startCode = h264[2]==0x01?0:1;
 				   int sizeHead = 3 +i_long_startCode;
 				   int sizePayload = size_buf-sizeHead;

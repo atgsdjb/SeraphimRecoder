@@ -154,7 +154,46 @@ void log4(const char* fmt,...){
 
 }
 void UUSee_Printf(const char* fmt, ... )
-{}
+{
+	const int MAX_DBG_STR = 1024;
+
+	    int written = 0;
+	    char buffer[MAX_DBG_STR];
+		memset(buffer,0,MAX_DBG_STR);
+
+	    va_list va;
+	    va_start( va, fmt );
+	    written = vsprintf( &buffer[0], fmt, va);
+	    va_end(va);
+		FILE *myLog = NULL;
+		myLog = fopen("/mnt/sdcard/seraphim/seraphim.log","a+");
+		if (myLog != NULL)
+		{
+			char tmp[50] = {0};
+			getCurTime((char *)tmp);
+
+			int thepid = (int)getpid();
+			char  buf[18];
+			memset( buf, 0x0, sizeof( buf ) );
+			snprintf(buf,sizeof(buf),"%d",thepid );
+			fputs("[PID:",myLog);
+			fputs(buf,myLog);
+			fputs("]",myLog);
+			pthread_t tid = pthread_self();
+			memset( buf, 0x0, sizeof( buf ) );
+			snprintf(buf,sizeof(buf),"%d", (unsigned int)tid);
+			fputs("[TID:",myLog);
+			fputs(buf,myLog);
+			fputs("]",myLog);
+			fputs(tmp,myLog);
+			fputs("  ",myLog);
+			fputs(buffer,myLog);
+		}else{
+			__android_log_write(1,"PORT","LOGError");
+		}
+		fclose(myLog);
+
+}
 //�鿴BUFFER״̬
 void UUSee_Printf_buffer(const char* fmt, ... )
 {	

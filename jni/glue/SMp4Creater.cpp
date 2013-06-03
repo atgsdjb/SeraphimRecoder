@@ -116,7 +116,7 @@ namespace Seraphim{
 			trackCompleteS[i]=false;
 			trackDurationS[i] = duration*trackParamS[i]->timeScale;
 			trackTimesTampS[i] = 0;
-			td_printf("---initTracks  index =%d duration=%d ----------------\n",i,trackDurationS[i]);
+			//td_printf("---initTracks  index =%d duration=%d ----------------\n",i,trackDurationS[i]);
 		}
 	}
 #include<iostream>
@@ -165,8 +165,8 @@ namespace Seraphim{
 
 					trackTimesTampS[i]+=((SAudioTrackParam*)trackParamS[i])->durationPreFrame;
 					trackCompleteS[i] = trackTimesTampS[i] >= trackDurationS[i]; 
-					td_printf("write into mp4 a audio addr = %p len=%d  index=%d-trackTimesTampS=%d---trackDurationS=%d-----\n",
-												      sample,len,indexA++,trackTimesTampS[i],trackDurationS[i]);
+					//td_printf("write into mp4 a audio addr = %p len=%d  index=%d-trackTimesTampS=%d---trackDurationS=%d-----\n",
+					//							      sample,len,indexA++,trackTimesTampS[i],trackDurationS[i]);
 				}
 				MP4WriteSample(file,trackS[i],sample,len);
 				delete sample;

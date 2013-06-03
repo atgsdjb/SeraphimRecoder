@@ -11,7 +11,7 @@ public class QVideoTrackParam extends QTrackParam{
 	public QVideoTrackParam(int timeScale, int bitRate, int sampleRate,
 			int duration, int renderingOffset,   int width,
 			int height) {
-		super(0,timeScale, bitRate, sampleRate, duration, renderingOffset);
+		super(0,timeScale, bitRate, sampleRate, duration, renderingOffset,false);
 		this.width = width;
 		this.height = height;
 	}

@@ -6,6 +6,7 @@ import com.seraphim.td.omx.QAudioTrackParam;
 import com.seraphim.td.omx.QFileSink;
 import com.seraphim.td.omx.QSink;
 import com.seraphim.td.omx.QTrackParam;
+import com.seraphim.td.omx.QVideoTrackParam;
 import com.seraphim.td.omx.QVideoTrackParam2;
 
 import android.app.Activity;
@@ -203,6 +204,7 @@ public class UuseeCameraActivity extends Activity  implements SurfaceHolder.Call
 		mUuseeCamera.release();
 	}
 	static{
+		System.loadLibrary("gnustl_shared");
 		System.loadLibrary("tdcodec.02");
 	}
 }

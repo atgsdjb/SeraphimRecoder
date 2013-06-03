@@ -28,6 +28,18 @@
 *.sln
 *.suo
 
+#Source insight
+*.IAB
+*.IAD
+*.IMD
+*.PFI
+*.PO
+*.PR
+*.PRI
+*.PS
+*.WK3
+*.log
+
 
 #othre
 *.yuv
@@ -42,3 +54,4 @@ libs
 gen
 exlibs
 bin
+*.IMB

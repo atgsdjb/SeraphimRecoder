@@ -14,6 +14,7 @@ extern"C"{
 #include<jni.h>
 #include"us_log.h"
 };
+#include"dl_tool.h"
 #include<android/log.h>
 using namespace std;
 using namespace Seraphim;
@@ -52,12 +53,14 @@ extern "C" {
  */
 JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
 (JNIEnv *env, jobject obj, jint countSample, jstring baseName, jint countTrack, jobjectArray trackParamS){
+	td_printf("----------------------------init ------0------------\n");
 	int i = 0;
 	jclass c_track = env->FindClass("com/seraphim/td/omx/QTrackParam");
 	if(c_track == NULL){
 		return ;
 	}
 	jfieldID f_t_type = env->GetFieldID(c_track,"type","I");
+	td_printf("----------------------------init ------1------------\n");
 	//QAudioTrakParam  class
 	jclass c_aTrack = env->FindClass("com/seraphim/td/omx/QAudioTrackParam");
 	jfieldID f_a_timeScale = env->GetFieldID(c_aTrack,"timeScale","I");
@@ -66,7 +69,8 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
 	jfieldID f_a_duration = env->GetFieldID(c_aTrack,"duration","I");
 	jfieldID f_a_usedSoftEncode = env->GetFieldID(c_aTrack,"usedSoft","Z");
 	//QVideoTrackParam class
-	jclass c_vTrack = env->FindClass("com/seraphim/td/omx/QVideoTrackParam2");
+	jclass c_vTrack = env->FindClass("com/seraphim/td/omx/QVideoTrackParam");
+	td_printf("----------------------------init ------2------------\n");
 	jfieldID f_v_timeScale = env->GetFieldID(c_vTrack,"timeScale","I");
 	jfieldID f_v_width = env-> GetFieldID(c_vTrack,"width","I");
 	jfieldID f_v_height = env->GetFieldID(c_vTrack,"height","I");
@@ -120,6 +124,13 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
 	context->countTrack = countTrack;
 	context->duration = countSample;
 	context->runing = true;
+	//start upLoad model
+	td_printf("----------------------------init ------a0------------\n");
+	
+	upload_module_init("");
+	td_printf("----------------------------init ------a1------------\n");
+	upload_module_start(1,"E3DAFD9C-0000-0000-FFFF-FFFFFFFFFF14","/mnt/sdcard/seraphim/",0,0,"219.237.241.176",5601);
+	td_printf("----------------------------init ------a2------------\n");
 	pthread_t tid;
 	pthread_create(&tid,NULL,workTask,0);
 }

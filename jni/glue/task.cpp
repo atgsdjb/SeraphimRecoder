@@ -6,7 +6,7 @@
 
 using namespace Seraphim;
 
-
+const char* lg_baseName="/mnt/sdcard/seraphim/E3DAFD9C-0000-0000-FFFF-FFFFFFFFFF14_%d.mp4";
 void* workTask(void* param){
 	int fileIndex = 0;
 	char fileName[64]={0};
@@ -18,9 +18,9 @@ void* workTask(void* param){
 	}while(g_PPS == NULL || g_SPS==NULL);
 	while(context->runing){
 		char fileName[64]={0};
-		sprintf(fileName,context->baseName,fileIndex++);
+		sprintf(fileName,/*context->baseName */lg_baseName,fileIndex++);
 		td_printf("-----begin---%s---\n",fileName);
-		SMp4Creater creater(fileName,20,context->idAndParm,context->idAndBuf,false);
+		SMp4Creater creater(fileName,10,context->idAndParm,context->idAndBuf,false);
 		td_printf("-----end-----%s---\n",fileName);
 		creater.addPPS(g_PPS,g_lenPPS,0);
 		creater.addSPS(g_SPS,g_lenSPS,0);
@@ -41,8 +41,8 @@ extern"C"{
 	//default get trackID =1 ;
 
 	 //faacEncHandle aacHandler = context->aacHandler;
-	FILE* f = fopen("/mnt/sdcard/seraphim/test.aac","wb+");
-	FILE* pcmF = fopen("/mnt/sdcard/seraphim/test.pcm","wb+");
+//	FILE* f = fopen("/mnt/sdcard/seraphim/test.aac","wb+");
+//	FILE* pcmF = fopen("/mnt/sdcard/seraphim/test.pcm","wb+");
 	 /************************************************************************/
 	 td_printf("---aacTask0----\n");
 	unsigned long sampleRate = 44100;//audioP->sampleRate;
@@ -81,16 +81,16 @@ extern"C"{
 				continue;
 			int pcmOffset;
 			enc_len = faacEncEncode(aacHandler,(int32_t*)(pcm),1024,l_sample,1024*2);
-			fwrite(pcm,1,1024*2,pcmF);
-			fflush(pcmF);
+//			fwrite(pcm,1,1024*2,pcmF);
+//			fflush(pcmF);
 			if(enc_len <=0){
 				continue;
 			}
 			uint8_t* l_b = new uint8_t[enc_len];
 			memcpy(l_b,l_sample,enc_len);
 			aacBuffer->write(l_b,enc_len);
-			fwrite(l_b,1,enc_len,f);
-			fflush(f);
+//			fwrite(l_b,1,enc_len,f);
+//			fflush(f);
 			delete[] pcm;
 		}
 	td_printf("---aacTask exit---------------\n");
