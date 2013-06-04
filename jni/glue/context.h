@@ -34,7 +34,8 @@ extern size_t g_lenSPS;
 extern uint8_t* g_PPS;
 extern uint8_t* g_SPS;
 extern SEncoderContext* context;
-
+extern uint8_t* g_first;
+extern int g_lenFirst;
 void* workTask(void*);
 void* aacTask(void*);
 //void* avcTask(void*);

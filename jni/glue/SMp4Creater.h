@@ -15,6 +15,10 @@
 //class SAudioTrackParam;
 //class SVideoTrackParm;
 //class SyncBuffer;
+extern"C"{
+#include<stdio.h>
+#include<string.h>
+}
 typedef void(*CompleteListener)(void);
 using namespace std;
 
@@ -22,16 +26,20 @@ using namespace std;
 namespace Seraphim{
 class SMp4Creater{
 private:
+	/*****/
+	FILE* h264File;
+	/*****/
 	const char		*name;
 	uint32_t	duration;//sec
 	uint8_t		trackCount;
+	uint8_t *first;
+	uint8_t lenFirst;
 	map<uint8_t,int>	trackS;
 	map<uint8_t,STrackParam*> trackParamS;
 	map<uint8_t,SSyncBuffer*>  trackBufS;
 	map<uint8_t,bool> trackCompleteS;
 	map<uint8_t,MP4Duration> trackDurationS;
 	map<uint8_t,MP4Duration> trackTimesTampS;
-
 	bool isAsyn;
 	CompleteListener listener;
 	MP4FileHandle file;
@@ -49,9 +57,10 @@ public:
 	void startEncode();
 	bool addPPS(uint8_t *pps ,int lenPPS,int trackIndex);
 	bool addSPS(uint8_t *sps ,int lenSPS,int trackIndex);
+	void addFirstSample(uint8_t* _first,int _len);
 	SSyncBuffer* getBuffer(int trackIndex);
 	STrackParam* getTrackParam(int trackIndex);
-
+	
 
 	//friend void* encode_task(void*);
 

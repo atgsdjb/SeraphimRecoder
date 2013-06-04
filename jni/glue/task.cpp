@@ -15,16 +15,17 @@ void* workTask(void* param){
 	do{
 		td_printf("--wiat pps sps---\n");
 		sleep(1);
-	}while(g_PPS == NULL || g_SPS==NULL);
+	}while(g_PPS == NULL || g_SPS==NULL || g_first ==NULL);
 	while(context->runing){
 		char fileName[64]={0};
 		sprintf(fileName,/*context->baseName */lg_baseName,fileIndex++);
 		td_printf("-----begin---%s---\n",fileName);
 		SMp4Creater creater(fileName,10,context->idAndParm,context->idAndBuf,false);
-		td_printf("-----end-----%s---\n",fileName);
 		creater.addPPS(g_PPS,g_lenPPS,0);
 		creater.addSPS(g_SPS,g_lenSPS,0);
+		creater.addFirstSample(g_first,  g_lenFirst);
 		creater.startEncode();
+		td_printf("-----end-----%s---\n",fileName);
 	}
 //	td_printf("-----workTask exit---------\n");
 	return 0;

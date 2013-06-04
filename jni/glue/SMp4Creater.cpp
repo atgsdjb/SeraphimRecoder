@@ -7,12 +7,38 @@
 
 /**test**/
 #ifndef SDEBUG
+
+#endif
+
+
+
+#include"us_log.h"
 extern"C"{
 #include<stdio.h>
+#include<string.h>
 };
-#endif
-#include"us_log.h"
+
+
 namespace Seraphim{
+	/**test****************/
+	void SMp4Creater::addFirstSample(uint8_t * _first, int _len){
+				first = _first;
+				lenFirst = _len;
+				MP4WriteSample(file,trackS[0],first,lenFirst);
+				trackTimesTampS[0] += ((SVideoTrackParm*)trackParamS[0])->durationPreFrame; 
+				uint32_t l_len ;
+				uint8_t* p_len =(uint8_t*) &l_len;
+				p_len[0] = _first[3];
+				p_len[1] = _first[2];
+				p_len[2] = _first[1];
+				p_len[3] = _first[0];
+				char l_type = _first[4] & 0x1f;
+				td_printf("---------add first sample l_len =%u::%x ---len =%d---type=%d-----\n",l_len,l_len,_len,l_type);
+		}
+
+	/**test****************/
+
+
 	/*
 	static void* encode_task(void *handle){
 		SMp4Creater *creater = (SMp4Creater*)handle;
@@ -96,6 +122,15 @@ namespace Seraphim{
 	}
 
 	void SMp4Creater::initTracks(){
+		/*****test*******/
+		char h264Name[128]={0};
+		strcpy(h264Name,name);
+		int index = strlen(name);
+		h264Name[index-3]='2';
+		h264Name[index-2]='6';
+		h264Name[index-1]='4';
+		h264File = fopen(h264Name,"wb+");
+		/*****test*******/
 		file = MP4CreateEx(name, MP4_DETAILS_ALL, 0, 1, 1, 0, 0, 0, 0);//����mp4�ļ�
 		assert(file !=MP4_INVALID_FILE_HANDLE);
 		MP4SetTimeScale(file,90000);
@@ -125,6 +160,7 @@ namespace Seraphim{
 	void SMp4Creater::encodeLoop(){
 		int i ;
 		uint8_t* sample;
+		
 		while(!comlete()){
 			for(i=0;i<trackCount;i++){
 				if(trackCompleteS[i]){
@@ -142,7 +178,7 @@ namespace Seraphim{
 				int type = trackParamS[i]->type;
 				if(type==0){
 					if(trackTimesTampS[i] > trackDurationS[i]){   //��֤ûһvideo track  ��SPS PPS��ʼ
-						td_printf("-   GET I FRAME   type=%x-----",sample[4]);
+						//td_printf("-   GET I FRAME   type=%x-----",sample[4]);
 						/**/
 						uint8_t l_c =sample[5];
 						uint8_t l_d =sample[4];
@@ -168,12 +204,26 @@ namespace Seraphim{
 					//td_printf("write into mp4 a audio addr = %p len=%d  index=%d-trackTimesTampS=%d---trackDurationS=%d-----\n",
 					//							      sample,len,indexA++,trackTimesTampS[i],trackDurationS[i]);
 				}
+				if(type==0){
+					uint32_t l_len ;
+					uint8_t* p_len =(uint8_t*) &l_len;
+					p_len[0] = sample[3];
+					p_len[1] = sample[2];
+					p_len[2] = sample[1];
+					p_len[3] = sample[0];
+					char l_type = sample[4] & 0x1f;
+					td_printf("---------add video sample l_len =%u::%x ---len =%d---type=%d-----\n",l_len,l_len,len,l_type);
+					fwrite(sample,1,len,h264File);
+					fwrite("SERAPHIM",1,8,h264File);
+				}
 				MP4WriteSample(file,trackS[i],sample,len);
 				delete sample;
 
 
 			}
 		}
+		fflush(h264File);
+		fclose(h264File);
 		MP4Close(file);
 		if(isAsyn && listener != 0)
 			listener();

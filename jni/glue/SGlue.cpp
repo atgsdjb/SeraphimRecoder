@@ -25,6 +25,11 @@ uint8_t *g_SPS;
 size_t g_lenPPS;
 size_t g_lenSPS;
 
+
+uint8_t *g_first;
+int g_lenFirst;
+
+
 /************************************************************************/
 /*                                                                      */
 /************************************************************************/
@@ -55,6 +60,9 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
 (JNIEnv *env, jobject obj, jint countSample, jstring baseName, jint countTrack, jobjectArray trackParamS){
 	td_printf("----------------------------init ------0------------\n");
 	int i = 0;
+	g_first  = 0;
+	g_lenFirst = 0;
+	
 	jclass c_track = env->FindClass("com/seraphim/td/omx/QTrackParam");
 	if(c_track == NULL){
 		return ;
@@ -125,12 +133,12 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
 	context->duration = countSample;
 	context->runing = true;
 	//start upLoad model
-	td_printf("----------------------------init ------a0------------\n");
+	//td_printf("----------------------------init ------a0------------\n");
 	
-	upload_module_init("");
-	td_printf("----------------------------init ------a1------------\n");
-	upload_module_start(1,"E3DAFD9C-0000-0000-FFFF-FFFFFFFFFF14","/mnt/sdcard/seraphim/",0,0,"219.237.241.176",5601);
-	td_printf("----------------------------init ------a2------------\n");
+	//upload_module_init("");
+	//td_printf("----------------------------init ------a1------------\n");
+	//upload_module_start(1,"E3DAFD9C-0000-0000-FFFF-FFFFFFFFFF14","/mnt/sdcard/seraphim/",0,0,"219.237.241.176",5601);
+	//td_printf("----------------------------init ------a2------------\n");
 	pthread_t tid;
 	pthread_create(&tid,NULL,workTask,0);
 }
@@ -144,6 +152,13 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1addSample
   (JNIEnv *env, jobject obj, jbyteArray sample ,jint offset,jint len, jint trackIndex){
 	static int g_index = 0;
 	jbyte* l_data = (jbyte*)env->GetByteArrayElements(sample, 0);
+	if(g_first==0){
+		g_first = new uint8_t[len];
+		memcpy(g_first,(uint8_t*)l_data,len);
+		g_lenFirst = len;
+		env->ReleaseByteArrayElements(sample,l_data,0);
+		return ;
+	}
 	uint8_t* data = new uint8_t[len];
 	memcpy(data,(uint8_t*)l_data,len);
 	if(data==NULL){
