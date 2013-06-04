@@ -788,7 +788,7 @@ MP4Atom* MP4File::AddDescendantAtoms(
 
 	return pChildAtom;
 }
-
+//moov.track[index].tkhd.width
 bool MP4File::FindProperty(const char* name, 
 	MP4Property** ppProperty, u_int32_t* pIndex)
 {
@@ -839,7 +839,7 @@ void MP4File::SetIntegerProperty(const char* name, u_int64_t value)
 
 	((MP4IntegerProperty*)pProperty)->SetValue(value, index);
 }
-
+////moov.track[index].tkhd.width
 void MP4File::FindFloatProperty(const char* name, 
 	MP4Property** ppProperty, u_int32_t* pIndex)
 {
@@ -870,6 +870,7 @@ void MP4File::SetFloatProperty(const char* name, float value)
 
 	MP4Property* pProperty;
 	u_int32_t index;
+	//moov.track[index].tkhd.width
 
 	FindFloatProperty(name, &pProperty, &index);
 

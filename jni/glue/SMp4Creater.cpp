@@ -125,8 +125,10 @@ namespace Seraphim{
 	void SMp4Creater::encodeLoop(){
 		int i ;
 		uint8_t* sample;
+		int videoIndex=0;
 		while(!comlete()){
 			for(i=0;i<trackCount;i++){
+				bool isSync=false;
 				if(trackCompleteS[i]){
 					continue;
 				}
@@ -139,14 +141,29 @@ namespace Seraphim{
 					trackCompleteS[i]=true;
 					continue;
 				}
+
 				int type = trackParamS[i]->type;
 				if(type==0){
+					/*
+					if(isIFrame(sample)){
+						isSync=true;
+						
+					}
+					if(trackTimesTampS[i] > trackDurationS[i]){  
+						if(isSync){
+							trackBufS[i]->writeBack(sample,len);
+							trackCompleteS[i]=true;
+							continue;
+						}
+					}
+					trackTimesTampS[i] += ((SVideoTrackParm*)trackParamS[i])->durationPreFrame; 	
+					*/
 					if(trackTimesTampS[i] > trackDurationS[i]){   //��֤ûһvideo track  ��SPS PPS��ʼ
 						td_printf("-   GET I FRAME   type=%x-----",sample[4]);
-						/**/
+						
 						uint8_t l_c =sample[5];
 						uint8_t l_d =sample[4];
-						/**/
+						
 						if(isIFrame(sample)){
 						
 							trackBufS[i]->writeBack(sample,len);
@@ -161,6 +178,7 @@ namespace Seraphim{
 						trackTimesTampS[i] += ((SVideoTrackParm*)trackParamS[i])->durationPreFrame; 
 
 					}
+					/************/
 				}else if(type == 1){
 
 					trackTimesTampS[i]+=((SAudioTrackParam*)trackParamS[i])->durationPreFrame;
@@ -168,7 +186,11 @@ namespace Seraphim{
 					//td_printf("write into mp4 a audio addr = %p len=%d  index=%d-trackTimesTampS=%d---trackDurationS=%d-----\n",
 					//							      sample,len,indexA++,trackTimesTampS[i],trackDurationS[i]);
 				}
-				MP4WriteSample(file,trackS[i],sample,len);
+				if(type==0){
+					td_printf("---index=%d---isSync=%d-------sample[4]=%x--\n",videoIndex++,isSync,sample[4]);
+
+				}
+				MP4WriteSample2(file,trackS[i],sample,len,/*isSync*/false);
 				delete sample;
 
 

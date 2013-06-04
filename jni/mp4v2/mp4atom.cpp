@@ -463,6 +463,8 @@ MP4Atom* MP4Atom::FindAtom(const char* name)
 	return FindChildAtom(name);
 }
 
+
+//moov.track[index].tkhd.width
 bool MP4Atom::FindProperty(const char *name, 
 	MP4Property** ppProperty, u_int32_t* pIndex)
 {
@@ -484,7 +486,7 @@ bool MP4Atom::FindProperty(const char *name,
 
 	return FindContainedProperty(name, ppProperty, pIndex);
 }
-
+//moov.track[index].tkhd.width
 bool MP4Atom::IsMe(const char* name)
 {
 	if (name == NULL) {
@@ -524,7 +526,7 @@ MP4Atom* MP4Atom::FindChildAtom(const char* name)
 
 	return NULL;
 }
-
+//track[index].tkhd.width
 bool MP4Atom::FindContainedProperty(const char *name,
 	MP4Property** ppProperty, u_int32_t* pIndex)
 {

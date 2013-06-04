@@ -2118,6 +2118,29 @@ extern "C" bool MP4ReadSampleFromTime(
 	return false;
 }
 
+/**
+bool MP4WriteSample(
+	MP4FileHandle hFile,
+	MP4TrackId trackId,
+	const u_int8_t* pBytes, 
+	u_int32_t numBytes,
+	MP4Duration duration DEFAULT(MP4_INVALID_DURATION),
+	MP4Duration renderingOffset DEFAULT(0), 
+	bool isSyncSample DEFAULT(true));
+
+**/
+extern"C" bool MP4WriteSample2(
+	MP4FileHandle hFile,
+	MP4TrackId trackId,
+	const u_int8_t* pBytes, 
+	u_int32_t numBytes,
+	bool isSync
+	){
+	MP4WriteSample(hFile,trackId,pBytes,numBytes,MP4_INVALID_DURATION,0,isSync);
+
+
+
+}
 extern "C" bool MP4WriteSample(
 	MP4FileHandle hFile,
 	MP4TrackId trackId,
