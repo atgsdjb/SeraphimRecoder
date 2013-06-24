@@ -9,8 +9,12 @@ public class QMP4Creater implements QSink {
 	//生产多个MP4文件
 
 	
-	public QMP4Creater(int sampleFile,String baseName,int countTrack,QTrackParam[] parms){
-		n_init(sampleFile,baseName,countTrack,parms);
+	public QMP4Creater(int sampleFile,String baseName,int countTrack,QTrackParam[] parms,String guid){
+		n_init(sampleFile,baseName,countTrack,parms,guid);
+	}
+	public QMP4Creater(){};
+	public void init(int sampleFile,String baseName,int countTrack,QTrackParam[] parms,String guid){
+		n_init(sampleFile,baseName,countTrack,parms,guid);
 	}
 	public void addPCM(byte[] pcm,int offset,int len){
 		n_addPCM(pcm);
@@ -60,7 +64,7 @@ public class QMP4Creater implements QSink {
 	const timeScale = p->timeScale;
  * @param sample
  */
-	native void n_init(int samplleFile,String baseName,int countTrack,QTrackParam[] parms);
+	native void n_init(int samplleFile,String baseName,int countTrack,QTrackParam[] parms,String guid);
 	native void n_addSample(byte[] data,int offset,int len,int trackIndex);
 	native void n_addPPS(byte[] data,int len);
 	native void n_addSPS(byte[] data,int len);

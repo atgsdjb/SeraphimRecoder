@@ -1285,7 +1285,7 @@ void MP4Track::UpdateSyncSamples(MP4SampleId sampleId, bool isSyncSample)
 {
 	
 	if (isSyncSample) {
-		td_printf("----sampleId=%d--%d-----\n",sampleId,isSyncSample);
+	//	td_printf("----sampleId=%d--%d-----\n",sampleId,isSyncSample);
 		// if stss atom exists, add entry
 		if (m_pStssCountProperty) {
 			m_pStssSampleProperty->AddValue(sampleId);

@@ -3,6 +3,8 @@ extern"C"{
 #include<stdint.h>
 #include"pthread.h"
 };
+
+#include<android/log.h>
 #include<map>
 #include"STrackParam.h"
 #include"context.h"
@@ -18,6 +20,7 @@ extern"C"{
 #include<android/log.h>
 using namespace std;
 using namespace Seraphim;
+
 
 SEncoderContext *context=0;
 uint8_t *g_PPS;
@@ -51,9 +54,14 @@ extern "C" {
  * Method:    n_init
  * Signature: (ILjava/lang/String;I[Lcom/seraphim/td/omx/QTrackParam;)V
  */
+ /*JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
+  (JNIEnv *, jobject, jint, jstring, jint, jobjectArray, jstring);
+  */
 JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
-(JNIEnv *env, jobject obj, jint countSample, jstring baseName, jint countTrack, jobjectArray trackParamS){
-	td_printf("----------------------------init ------0------------\n");
+(JNIEnv *env, jobject obj, jint countSample, jstring baseName, jint countTrack, jobjectArray trackParamS,jstring jguid){
+
+	__android_log_write(ANDROID_LOG_ERROR,"seraphim","init----------------------------------------------");
+	td_printf("----------------------------init --%s----0------------\n");
 	int i = 0;
 	jclass c_track = env->FindClass("com/seraphim/td/omx/QTrackParam");
 	if(c_track == NULL){
@@ -85,7 +93,7 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
 	for(i2 = 0;i2<countTrack;i2++){
 		jobject obj = env->GetObjectArrayElement(trackParamS,i2);
 		int type = env->GetIntField(obj,f_t_type);
-		STrackParam* l_track;
+		//STrackParam* l_track;
 		/**
 		 *
 		 */
@@ -97,7 +105,7 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
 			int sampleRate = env->GetIntField(obj,f_v_sampleRate);
 			int duration =env->GetIntField(obj,f_v_duration);
 			bool usedSoft = env->GetBooleanField(obj,f_v_usedSoftEncode);
-			STrackParam *v_param = new SVideoTrackParm(90000,352,288,1024 * 500,25,20);
+			STrackParam *v_param = new SVideoTrackParm(timeScale,width,height,bitRate,sampleRate,0);
 			context->idAndParm[i2] = v_param;
 
 		}else if(type == 1){
@@ -107,7 +115,7 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
 			int duration =env->GetIntField(obj,f_a_duration);
 			bool usedSoft=env->GetBooleanField(obj,f_a_usedSoftEncode);
 
-			l_track = new SAudioTrackParam(timeScale,bitRate,sampleRate,duration,usedSoft);
+			//l_track = new SAudioTrackParam(timeScale,bitRate,sampleRate,duration,usedSoft);
 			if(usedSoft){
 				initAAC();
 			}
@@ -118,18 +126,27 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
 		}
 		context->idAndBuf[i2] = new SSyncBuffer;
 	}
+	td_printf("----------------------------init ------read guid--0----------\n");
+	
+	const char* l_guid = env->GetStringUTFChars(jguid,JNI_FALSE);
+	td_printf("----------------------------init ------read guid--1----------\n");
+
 	char* name = new char[128];
+	char* guid = new char[128];
+	td_printf("-guid=%s-----init ------read guid--2----------\n",guid);
+	strcpy(guid ,l_guid);
 	strcpy(name,l_str);
 	context->baseName = name;
 	context->countTrack = countTrack;
 	context->duration = countSample;
 	context->runing = true;
+	context->guid = guid;
 	//start upLoad model
 	td_printf("----------------------------init ------a0------------\n");
 	
-	upload_module_init("");
+	//upload_module_init("");
 	td_printf("----------------------------init ------a1------------\n");
-	upload_module_start(1,"E3DAFD9C-0000-0000-FFFF-FFFFFFFFFF14","/mnt/sdcard/seraphim/",0,0,"219.237.241.176",5601);
+	//upload_module_start(1,guid,"/mnt/sdcard/seraphim",0,0,"219.237.241.176",5601);
 	td_printf("----------------------------init ------a2------------\n");
 	pthread_t tid;
 	pthread_create(&tid,NULL,workTask,0);

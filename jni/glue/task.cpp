@@ -3,30 +3,41 @@
 #include"SSyncBuf.h"
 #include"STrackParam.h"
 #include"us_log.h"
+extern "C"{
+#include<stdio.h>
+#include<string.h>
 
+}
 using namespace Seraphim;
-
+const char* path="/mnt/sdcard/seraphim/";
 const char* lg_baseName="/mnt/sdcard/seraphim/E3DAFD9C-0000-0000-FFFF-FFFFFFFFFF14_%d.mp4";
 void* workTask(void* param){
-	int fileIndex = 0;
-	char fileName[64]={0};
-	sprintf(fileName,context->baseName,fileIndex++);
+	char baseName[64]={0};
+	char allName[128] ={0};
+	char* guid = context->guid;
+	memcpy(baseName,(const char*)guid,strlen((const char*)guid));
+	strcat(baseName,"_%d.mp4");
+	memcpy(allName,path,strlen(path));
+	strcat(allName,baseName);
+	int fileIndex = 1;
+	char fileName[128]={0};
+	//sprintf(fileName,context->baseName,fileIndex++);
 	//  wait  pps  sps
 	do{
 		td_printf("--wiat pps sps---\n");
 		sleep(1);
 	}while(g_PPS == NULL || g_SPS==NULL);
 	while(context->runing){
-		char fileName[64]={0};
-		sprintf(fileName,/*context->baseName */lg_baseName,fileIndex++);
-		td_printf("-----begin---%s---\n",fileName);
-		SMp4Creater creater(fileName,10,context->idAndParm,context->idAndBuf,false);
-		td_printf("-----end-----%s---\n",fileName);
+		char fileName[128]={0};
+		sprintf(fileName,/*context->baseName */allName,fileIndex++);
+		//td_printf("-----begin---%s---\n",fileName);
+		SMp4Creater creater(fileName,context->duration,context->idAndParm,context->idAndBuf,false);
+		//td_printf("-----end-----%s---\n",fileName);
 		creater.addPPS(g_PPS,g_lenPPS,0);
 		creater.addSPS(g_SPS,g_lenSPS,0);
 		creater.startEncode();
 	}
-//	td_printf("-----workTask exit---------\n");
+	td_printf("-----workTask exit---------\n");
 	return 0;
 
 }
@@ -44,7 +55,7 @@ extern"C"{
 //	FILE* f = fopen("/mnt/sdcard/seraphim/test.aac","wb+");
 //	FILE* pcmF = fopen("/mnt/sdcard/seraphim/test.pcm","wb+");
 	 /************************************************************************/
-	 td_printf("---aacTask0----\n");
+	 //td_printf("---aacTask0----\n");
 	unsigned long sampleRate = 44100;//audioP->sampleRate;
 	unsigned long bitRate = 32*1024;//audioP->bitRate;
 	int numChannels = 1;

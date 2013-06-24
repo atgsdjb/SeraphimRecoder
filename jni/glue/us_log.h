@@ -28,6 +28,7 @@ extern "C" {
 	#define UUSee_Printf(...)
 	#define UUSee_Printf_Hex(fragment,length,name)
 	#define td_printf(fmt,...)
+	#define log4(fmt,...)
 #else 
 	
 	void UUSee_AssertFail(const char *cond, const char *file, int line);

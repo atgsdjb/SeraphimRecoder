@@ -15,7 +15,7 @@ void AdtsHelp::put_bits(uint8_t countBit,uint32_t data){
 		uint32_t l_t_t = (data>>i) &0x01;
 		adts[t_i] |= (data>>i) & 0x01; 
 		uint8_t t_t = adts[t_i];
-		td_printf("--indexBit=%d---countBit=%d,data=%d---------------------\n",indexBit,countBit,t_t);
+		//td_printf("--indexBit=%d---countBit=%d,data=%d---------------------\n",indexBit,countBit,t_t);
 		indexBit++;
 	}
 }

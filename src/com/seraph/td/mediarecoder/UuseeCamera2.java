@@ -80,7 +80,7 @@ public class UuseeCamera2  implements Camera.PreviewCallback,Camera.ErrorCallbac
 	    mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, 500000);
 	    mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 15);
 	    mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar);
-	    mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 5);
+	    mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
 		try{
 	
 			mEncoder = new QCodecSink("","OMX.Nvidia.h264.encoder", mediaFormat,0,mQSink);

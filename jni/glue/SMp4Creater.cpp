@@ -37,6 +37,7 @@ namespace Seraphim{
 	/************************************************************************/
 	/*                                                                      */
 	/************************************************************************/
+	/*
 	SMp4Creater::SMp4Creater(const char* _name,uint32_t _duration,const vector<STrackParam*>&_trackParam,const vector<SSyncBuffer*>& _trackBufS,bool _isAsyn,CompleteListener _listener)
 	:name(_name),duration(_duration),listener(_listener),isAsyn(_isAsyn){
 		int i = 0;
@@ -49,11 +50,12 @@ namespace Seraphim{
 		}
 		initTracks();
 	}
-
+	*/
 
 	/************************************************************************/
 	/*                                                                      */
 	/************************************************************************/
+	/*
 	SMp4Creater::SMp4Creater(const char* _name,uint32_t _duration,uint8_t _trackCount,STrackParam* _trackParam,SSyncBuffer* _trackBufS,bool _isAsyn,CompleteListener _listener)
 		:name(_name),trackCount(_trackCount),duration(_duration),listener(_listener),isAsyn(_isAsyn){
 		int i;
@@ -64,6 +66,7 @@ namespace Seraphim{
 		}
 		initTracks();
 	}
+	*/
 	void SMp4Creater::addSample8(uint8_t *sample,size_t size,uint8_t trackIndex){
 		//trackBufS[trackIndex].write23(sample,size);
 	}
@@ -116,7 +119,7 @@ namespace Seraphim{
 			trackCompleteS[i]=false;
 			trackDurationS[i] = duration*trackParamS[i]->timeScale;
 			trackTimesTampS[i] = 0;
-			//td_printf("---initTracks  index =%d duration=%d ----------------\n",i,trackDurationS[i]);
+			td_printf("---initTracks  index =%d duration=%d i_duration=%d ------trackDurationS%d----------\n",i,duration,trackParamS[i]->timeScale,trackDurationS[i]);
 		}
 	}
 #include<iostream>
@@ -158,16 +161,14 @@ namespace Seraphim{
 					}
 					trackTimesTampS[i] += ((SVideoTrackParm*)trackParamS[i])->durationPreFrame; 	
 					*/
+					isSync = isIFrame(sample);
 					if(trackTimesTampS[i] > trackDurationS[i]){   //��֤ûһvideo track  ��SPS PPS��ʼ
-						td_printf("-   GET I FRAME   type=%x-----",sample[4]);
+						//td_printf("-   GET I FRAME   type=%x-----",sample[4]);
 						
 						uint8_t l_c =sample[5];
-						uint8_t l_d =sample[4];
-						
-						if(isIFrame(sample)){
-						
-							trackBufS[i]->writeBack(sample,len);
-							
+						uint8_t l_d =sample[4];						
+						if(isSync){
+							trackBufS[i]->writeBack(sample,len);							
 							trackCompleteS[i]=true;
 							continue;
 						}
@@ -180,17 +181,17 @@ namespace Seraphim{
 					}
 					/************/
 				}else if(type == 1){
-
+					isSync = false;
 					trackTimesTampS[i]+=((SAudioTrackParam*)trackParamS[i])->durationPreFrame;
 					trackCompleteS[i] = trackTimesTampS[i] >= trackDurationS[i]; 
 					//td_printf("write into mp4 a audio addr = %p len=%d  index=%d-trackTimesTampS=%d---trackDurationS=%d-----\n",
 					//							      sample,len,indexA++,trackTimesTampS[i],trackDurationS[i]);
 				}
-				if(type==0){
-					td_printf("---index=%d---isSync=%d-------sample[4]=%x--\n",videoIndex++,isSync,sample[4]);
-
-				}
-				MP4WriteSample2(file,trackS[i],sample,len,/*isSync*/false);
+					//seraphim3
+				isSync =false;
+				int ll = trackTimesTampS[i];
+				td_printf("write into ll =%d  ---trackDurationS=%d-----\n",ll,trackDurationS[i]);
+				MP4WriteSample2(file,trackS[i],sample,len,isSync);
 				delete sample;
 
 

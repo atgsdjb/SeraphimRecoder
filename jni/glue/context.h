@@ -28,6 +28,7 @@ typedef struct{
 	x264_t * x264Handler;
 	x264_param_t *x264Param;
 	bool runing;
+	char* guid;
 }SEncoderContext;
 extern size_t g_lenPPS;
 extern size_t g_lenSPS;
