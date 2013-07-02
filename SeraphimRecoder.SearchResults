@@ -1,11 +1,19 @@
----- trackDurationS Matches (11 in 2 files) ----
-SMp4Creater.cpp (jni\glue):			trackDurationS[i] = duration*trackParamS[i]->timeScale;
-SMp4Creater.cpp (jni\glue):			td_printf("---initTracks  index =%d duration=%d i_duration=%d ------trackDurationS%d----------\n",i,duration,trackParamS[i]->timeScale,trackDurationS[i]);
-SMp4Creater.cpp (jni\glue):					if(trackTimesTampS[i] > trackDurationS[i]){  
-SMp4Creater.cpp (jni\glue):					if(trackTimesTampS[i] > trackDurationS[i]){   //��֤ûһvideo track  ��SPS PPS��ʼ
-SMp4Creater.cpp (jni\glue):					trackCompleteS[i] = trackTimesTampS[i] >= trackDurationS[i]; 
-SMp4Creater.cpp (jni\glue):					//td_printf("write into mp4 a audio addr = %p len=%d  index=%d-trackTimesTampS=%d---trackDurationS=%d-----\n",
-SMp4Creater.cpp (jni\glue):					//							      sample,len,indexA++,trackTimesTampS[i],trackDurationS[i]);
-SMp4Creater.cpp (jni\glue):				td_printf("write into mp4 a audio addr = %p len=%d  index=%d-trackTimesTampS=%d---trackDurationS=%d-----\n",
-SMp4Creater.cpp (jni\glue):												      sample,len,indexA++,trackTimesTampS[i],trackDurationS[i]);
-SMp4Creater.h (jni\glue):	map<uint8_t,MP4Duration> trackDurationS;
+---- addr Matches (4 in 4 files) ----
+SGlue.cpp (jni\glue):205
+	//td_printf("------------add sample trackIndex =%d-----addr=%p---len=%d------------\n",trackIndex,data,len);
+	env->ReleaseByteArrayElements(sample,l_data,0);
+	//seraphim3
+SSyncBuf.cpp (jni\glue):74
+		log4("}{addr=");
+		for(bi;bi<d_buf.end();bi++){
+			log4("[%p]",*bi);
+Task.cpp (jni\glue):157
+//				//td_printf("-add aac sample addr=%p len=%d-----\n",l_b,enc_len);
+//				aacBuffer->write(l_b,enc_len);
+//				fwrite(l_b,1,enc_len,aacfile);
+UuseeCameraActivity.java (src\...\mediarecoder):75
+			InetSocketAddress addr = new InetSocketAddress("219.237.241.176", 5601);
+			Socket  s =  new Socket();
+			s.connect(addr);
+			System.out.println("----------OK----");
+		}catch(Exception e){

@@ -129,14 +129,12 @@ public class UuseeCameraActivity extends Activity  implements SurfaceHolder.Call
 		mCtrlButton.setEnabled(false);
 		mMp4Sink = new QMP4Creater();
 		mUuseeCamera = new  UuseeCamera2(this, 0,widthVideo,heightVideo,mMp4Sink);
-		//seraphim3
-		//new Thread(getGuidTask).start();
-		Message msg = new Message();
-		msg.getData().putString("UUSEE_GUID","seraph");
-		msg.what = GET_GUID_OK;
-		getGUIDHandler.sendMessage(msg);
+		new Thread(getGuidTask).start();
+//		Message msg = new Message();
+//		msg.getData().putString("UUSEE_GUID","seraph");
+//		msg.what = GET_GUID_OK;
+//		getGUIDHandler.sendMessage(msg);
 		//seraphim4
-		mCtrlButton.setEnabled(true);
 		new Thread(testSocket).start();
 	}
 
@@ -266,6 +264,6 @@ public class UuseeCameraActivity extends Activity  implements SurfaceHolder.Call
 	}
 	static{
 		System.loadLibrary("gnustl_shared");
-		System.loadLibrary("tdcodec.02");
+		System.loadLibrary("tdcodec.021");
 	}
 }

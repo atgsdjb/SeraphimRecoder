@@ -26,6 +26,7 @@ private:
 	const char		*name;
 	uint32_t	duration;//sec
 	uint8_t		trackCount;
+	uint8_t* firstSample;
 	map<uint8_t,int>	trackS;
 	map<uint8_t,STrackParam*> trackParamS;
 	map<uint8_t,SSyncBuffer*>  trackBufS;
@@ -38,10 +39,12 @@ private:
 	MP4FileHandle file;
 	MP4TrackId createAudioTrack(STrackParam* param);
 	MP4TrackId createVideoTrack(STrackParam* param);
+
+	
 	bool comlete();
 	void initTracks();
 	void encodeLoop();
-	FILE* h264File;
+	//FILE* h264File;
 
 	
 public:
@@ -55,7 +58,8 @@ public:
 	bool addSPS(uint8_t *sps ,int lenSPS,int trackIndex);
 	SSyncBuffer* getBuffer(int trackIndex);
 	STrackParam* getTrackParam(int trackIndex);
-
+	void addVideoHead(int trackIndex,uint8_t* pps,int lenPPS,uint8_t* psp,int lenSPS,bool addFirstSample);
+	~SMp4Creater(){if(firstSample) delete[] firstSample;};
 
 	//friend void* encode_task(void*);
 

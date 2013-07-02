@@ -12,6 +12,7 @@ using namespace Seraphim;
 const char* path="/mnt/sdcard/seraphim/";
 const char* lg_baseName="/mnt/sdcard/seraphim/E3DAFD9C-0000-0000-FFFF-FFFFFFFFFF14_%d.mp4";
 void* workTask(void* param){
+	static bool firstFile = true;
 	char baseName[64]={0};
 	char allName[128] ={0};
 	char* guid = context->guid;
@@ -24,18 +25,20 @@ void* workTask(void* param){
 	//sprintf(fileName,context->baseName,fileIndex++);
 	//  wait  pps  sps
 	do{
-		td_printf("--wiat pps sps---\n");
+		//td_printf("--wiat pps sps---\n");
 		sleep(1);
 	}while(g_PPS == NULL || g_SPS==NULL);
 	while(context->runing){
 		char fileName[128]={0};
 		sprintf(fileName,/*context->baseName */allName,fileIndex++);
-		//td_printf("-----begin---%s---\n",fileName);
 		SMp4Creater creater(fileName,context->duration,context->idAndParm,context->idAndBuf,false);
-		//td_printf("-----end-----%s---\n",fileName);
-		creater.addPPS(g_PPS,g_lenPPS,0);
-		creater.addSPS(g_SPS,g_lenSPS,0);
+		creater.addVideoHead(0, g_PPS, g_lenPPS, g_SPS, g_lenSPS, !firstFile);
+		//creater.addPPS(g_PPS,g_lenPPS,0);
+		//creater.addSPS(g_SPS,g_lenSPS,0);
 		creater.startEncode();
+		if(firstFile){
+			firstFile = false;
+		}
 	}
 	td_printf("-----workTask exit---------\n");
 	return 0;

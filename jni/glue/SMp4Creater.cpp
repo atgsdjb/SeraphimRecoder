@@ -30,7 +30,20 @@ namespace Seraphim{
 		for(int i = 0;i< trackCount;i++){
 			trackS[i] = MP4_INVALID_TRACK_ID;
 		}
+		firstSample = 0;
 		initTracks();
+		//seraphim3
+		/*
+		int ll = strlen(name)+1;
+		char* h264Name = new  char[ll];
+		strcpy(h264Name,name);
+		h264Name[ll-4]='h';
+		h264Name[ll-3]='2';
+		h264Name[ll-2]='4';
+		h264Name[ll-1]=0;
+		h264File = fopen(h264Name,"w+");
+		delete[] h264Name;
+		*/
 	}
 
 
@@ -82,6 +95,25 @@ namespace Seraphim{
 		
 	}
 
+	void SMp4Creater::addVideoHead(int trackIndex,uint8_t * pps, int lenPPS, uint8_t * sps, int lenSPS, bool addFirstSample)
+	{
+		addSPS(sps, lenSPS,trackIndex);
+		addPPS(pps, lenPPS,trackIndex);
+		if(addFirstSample){
+			//td_printf("addVideoHead\n");
+			firstSample = new uint8_t[lenSPS+lenPPS];
+			//memcpy(firstSample,sps,lenSPS);
+			//memcpy(firstSample+lenSPS,pps,lenPPS);
+			//fwrite(firstSample,1,lenPPS+lenSPS,h264File);
+			MP4WriteSample2(file,trackS[trackIndex],firstSample,lenPPS+lenSPS,false);
+			//td_printf("add head -----len =%d\n",lenPPS+lenSPS);
+			//for(int i=0;i<(lenPPS+lenSPS);i++){
+			//	td_printf("head index =%d   byte=%x\n",i,firstSample[i]);
+			//}
+		}
+
+	}
+	
 	MP4TrackId SMp4Creater::createAudioTrack(STrackParam * param){
 		SAudioTrackParam *p =(SAudioTrackParam*)param;
 		 MP4Duration timeScale = p->timeScale;
@@ -119,7 +151,6 @@ namespace Seraphim{
 			trackCompleteS[i]=false;
 			trackDurationS[i] = duration*trackParamS[i]->timeScale;
 			trackTimesTampS[i] = 0;
-			td_printf("---initTracks  index =%d duration=%d i_duration=%d ------trackDurationS%d----------\n",i,duration,trackParamS[i]->timeScale,trackDurationS[i]);
 		}
 	}
 #include<iostream>
@@ -147,23 +178,8 @@ namespace Seraphim{
 
 				int type = trackParamS[i]->type;
 				if(type==0){
-					/*
-					if(isIFrame(sample)){
-						isSync=true;
-						
-					}
-					if(trackTimesTampS[i] > trackDurationS[i]){  
-						if(isSync){
-							trackBufS[i]->writeBack(sample,len);
-							trackCompleteS[i]=true;
-							continue;
-						}
-					}
-					trackTimesTampS[i] += ((SVideoTrackParm*)trackParamS[i])->durationPreFrame; 	
-					*/
 					isSync = isIFrame(sample);
-					if(trackTimesTampS[i] > trackDurationS[i]){   //��֤ûһvideo track  ��SPS PPS��ʼ
-						//td_printf("-   GET I FRAME   type=%x-----",sample[4]);
+					if(trackTimesTampS[i] > trackDurationS[i]){   
 						
 						uint8_t l_c =sample[5];
 						uint8_t l_d =sample[4];						
@@ -172,25 +188,20 @@ namespace Seraphim{
 							trackCompleteS[i]=true;
 							continue;
 						}
-					}else{									     //��д��A FRAME
-						//mp
-						//MP4WriteSample(file,trackS[i],sample,len);
-						//û����ַ���Ƶ���
+					}else{									     
 						trackTimesTampS[i] += ((SVideoTrackParm*)trackParamS[i])->durationPreFrame; 
-
+						//fwrite(sample,1,len,h264File);
 					}
 					/************/
 				}else if(type == 1){
 					isSync = false;
 					trackTimesTampS[i]+=((SAudioTrackParam*)trackParamS[i])->durationPreFrame;
 					trackCompleteS[i] = trackTimesTampS[i] >= trackDurationS[i]; 
-					//td_printf("write into mp4 a audio addr = %p len=%d  index=%d-trackTimesTampS=%d---trackDurationS=%d-----\n",
-					//							      sample,len,indexA++,trackTimesTampS[i],trackDurationS[i]);
 				}
 					//seraphim3
-				isSync =false;
-				int ll = trackTimesTampS[i];
-				td_printf("write into ll =%d  ---trackDurationS=%d-----\n",ll,trackDurationS[i]);
+				//isSync =false;
+				//int ll = trackTimesTampS[i];
+				//td_printf("write into ll =%d  ---trackDurationS=%d-----\n",ll,trackDurationS[i]);
 				MP4WriteSample2(file,trackS[i],sample,len,isSync);
 				delete sample;
 
@@ -198,6 +209,8 @@ namespace Seraphim{
 			}
 		}
 		MP4Close(file);
+		//fflush(h264File);
+		//fclose(h264File);
 		if(isAsyn && listener != 0)
 			listener();
 

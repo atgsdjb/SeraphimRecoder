@@ -65,6 +65,7 @@ namespace Seraphim{
 		pthread_mutex_unlock(&mutex);
 	}
 	void SSyncBuffer::show(){
+		/*
 		deque<int>::iterator si = size_buf.begin();
 		deque<uint8_t*>::iterator bi = d_buf.begin();
 		log4("size={");
@@ -76,7 +77,8 @@ namespace Seraphim{
 			log4("[%p]",*bi);
 		}
 		log4("}");
+		*/
 	}
-
+	
 
 };

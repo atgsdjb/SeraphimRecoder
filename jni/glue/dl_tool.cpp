@@ -6,7 +6,7 @@
 #include<errno.h>
 #include"us_log.h"
 //com.seraph.td.mediarecoder
-const char *LIB_PATH="/data/data/com.seraph.td.mediarecoder/lib/libus_upload.0.3.so";
+const char *LIB_PATH="/data/data/com.seraph.td.mediarecoder/lib/libus_upload.0.3.so";//"/mnt/sdcard/libs/libus_upload.0.3.so";//
 //'					  /data/data/com.uusee.mini/lib/libus_upload.0.2.so
 static void* g_handle ;
 typedef int (*fInit)(UUSee_Upload_CallBack callback);
