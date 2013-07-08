@@ -3,12 +3,9 @@ package com.seraph.td.mediarecoder;
 
 import com.seraphim.td.nativ.QMP4Creater;
 import com.seraphim.td.omx.QAudioTrackParam;
-import com.seraphim.td.omx.QFileSink;
 import com.seraphim.td.omx.QSink;
 import com.seraphim.td.omx.QTrackParam;
 import com.seraphim.td.omx.QVideoTrackParam;
-import com.seraphim.td.omx.QVideoTrackParam2;
-
 import android.app.Activity;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
@@ -39,35 +36,8 @@ public class UuseeCameraActivity extends Activity  implements SurfaceHolder.Call
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-//		audioRcoder  = new UuseeAudioRecorder(this);
-//		audioRcoder.startRecord();
-		
-		
-		
-//		try {
-//			QFileSink fileSink = new QFileSink(Environment.getExternalStorageDirectory().getPath()+"/seraphim/seraphim.aac");
-//			UuseeAudioRecorder audioRecoder = new UuseeAudioRecorder(this,fileSink );
-//			audioRecoder.start();
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		try{
-//		QFileSink fileSink = new QFileSink(Environment.getExternalStorageDirectory().getPath()+"/seraphim/test2.pcm");
-//		UuseeAudioRecorder audioRecoder = new UuseeAudioRecorder(this,fileSink);
-//		audioRecoder.startRecord();
-//		}catch(Exception e){
-//			
-//		}
-//	
 		requestWindowFeature(Window.FEATURE_NO_TITLE);  
 		setContentView(R.layout.layout_uuseecamera);
-		int count = MediaCodecList.getCodecCount();
-		for(int i=0;i<count;i++){
-			MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
-			String msg = info.getName();
-			Log.e(TAG,msg);
-		}
 		widthVideo = 640;
 		heightVideo = 480;
 		mView  = (SurfaceView) findViewById(R.id.surface);
@@ -106,13 +76,12 @@ public class UuseeCameraActivity extends Activity  implements SurfaceHolder.Call
 									audioDuration,audioRenderingOffset);
 		params[0] = videoTrack;
 		params[1] = audioTrack;
-		mMp4Sink = new QMP4Creater(100,
-				Environment.getExternalStorageDirectory().getPath()+"/seraphim/uusee%03d.mp4",
-				2,params);
-		mUuseeCamera = new  UuseeCamera2(this, 0,videoWidth,videoHeight,mMp4Sink);
 		try{
-//		QFileSink fileSink = new QFileSink(Environment.getExternalStorageDirectory().getPath()+"/seraphim/test2.pcm");
-		audioRcoder = new UuseeAudioRecorder(this,(QMP4Creater)mMp4Sink,true);
+			mMp4Sink = new QMP4Creater(100,
+					Environment.getExternalStorageDirectory().getPath()+"/seraphim/uusee%03d.mp4",
+					2,params);
+			mUuseeCamera = new  UuseeCamera2(this, 0,videoWidth,videoHeight,mMp4Sink);
+			audioRcoder = new UuseeAudioRecorder(this,(QMP4Creater)mMp4Sink,true);
 		}catch(Exception e){
 			Log.e(TAG,""+e.getMessage());
 		}
@@ -198,7 +167,7 @@ public class UuseeCameraActivity extends Activity  implements SurfaceHolder.Call
 			atPreview = false;
 //			mUuseeCamera.stopPreview();
 		}
-		mCtrlButton.setText("褰曞埗");
+		mCtrlButton.setText("STOP");
 		mCtrlButton.invalidate();
 		mCtrlButton.setEnabled(false);
 		mUuseeCamera.release();

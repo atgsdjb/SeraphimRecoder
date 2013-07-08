@@ -1,23 +1,19 @@
 package com.seraph.td.mediarecoder;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.seraph.td.mediarecoder.R;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
+import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.net.LocalServerSocket;
-import android.net.LocalSocket;
 import android.net.LocalSocketAddress;
 import android.os.Bundle;
 import android.os.Environment;
@@ -30,12 +26,16 @@ import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.MediaController;
 import android.widget.Spinner;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemSelectedListener;
 
-public class UuseeMediaRecorder extends Activity implements SurfaceHolder.Callback {
-	
+public class UuseeMediaRecorder extends Activity implements 
+									  SurfaceHolder.Callback ,
+									  MediaRecorder.OnInfoListener,
+									  MediaRecorder.OnErrorListener
+{
 	private Button button_start;
 	private Button button_stop;
 	private Button button_back;
@@ -48,11 +48,9 @@ public class UuseeMediaRecorder extends Activity implements SurfaceHolder.Callba
 	private int width;
 	private int height;
 	private Adapter mAdapter;
-	private LocalSocket mLocalSocket;
 	private LocalServerSocket mServerSocket;
 	private final String address = "com.seraph.td";
 	private LocalSocketAddress mSocketAddress = new LocalSocketAddress(address);
-//	private TextView textView_time;
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -78,7 +76,7 @@ public class UuseeMediaRecorder extends Activity implements SurfaceHolder.Callba
         spinner.setOnItemSelectedListener(spinnerListener);
         boolean sdCardExist = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
         if (sdCardExist) {
-        	storageDir = new File(Environment.getExternalStorageDirectory().toString() + File.separator + "Demo" + File.separator);
+        	storageDir = new File("/mnt/sdcard/seraphim/"); //;new File(Environment.getExternalStorageDirectory().toString() + File.separator + "seraphim" + File.separator);
         	if (!storageDir.exists()) {
         		storageDir.mkdir();
         	}
@@ -99,29 +97,26 @@ public class UuseeMediaRecorder extends Activity implements SurfaceHolder.Callba
 			button_stop.setVisibility(View.VISIBLE);
 			spinner.setVisibility(View.GONE);
 			try {
-				/**
-				mLocalSocket = new LocalSocket();
-//				File file = new File(mLocalSocket.getFileDescriptor());
-				File file = new File("");
-				FileDescriptor fd = new FileInputStream(file).getFD();
-				mServerSocket = new LocalServerSocket(address);
-		        mLocalSocket.connect(mSocketAddress);
-				mLocalSocket.setReceiveBufferSize(65534);
-				mLocalSocket.setSendBufferSize(65534);
-				*/
-//		        new Thread(ReceiveServer).start();   //接受
 				mediaRecorder = new MediaRecorder();
-				mediaRecorder.setCamera(camera);
-				mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-				mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-				mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-				mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-				mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+				mediaRecorder.setOnErrorListener(UuseeMediaRecorder.this);
+				mediaRecorder.setOnInfoListener(UuseeMediaRecorder.this);
+		        camera.unlock();
+		        mediaRecorder.setCamera(camera);
+
+
+		        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
+		        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+		        CamcorderProfile camcorderProfile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
+		        camcorderProfile.videoFrameWidth = 640;
+		        camcorderProfile.videoFrameHeight = 480;
+		        camcorderProfile.videoCodec = MediaRecorder.VideoEncoder.H264;
+		        camcorderProfile.fileFormat = MediaRecorder.OutputFormat.MPEG_4;
+		        mediaRecorder.setProfile(camcorderProfile);
 				mediaRecorder.setVideoSize(width, height);
 				mediaRecorder.setVideoFrameRate(16);
 				mediaRecorder.setPreviewDisplay(surfaceHolder.getSurface());
-//				mediaRecorder.setOutputFile(mLocalSocket.getFileDescriptor());
-				mediaRecorder.setOutputFile("/mnt/sdcard/test.mp4");
+				mediaRecorder.setOutputFile("/mnt/sdcard/seraphim/test.mp4");
+				mediaRecorder.setMaxDuration(10000);
 				mediaRecorder.prepare();
 				mediaRecorder.start();
 			} catch (IllegalStateException e) {
@@ -130,6 +125,8 @@ public class UuseeMediaRecorder extends Activity implements SurfaceHolder.Callba
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			}catch(Exception e){
+				Log.e(TAG,"msg ====" + e.getMessage());
 			}
 		}
 	}; 
@@ -172,26 +169,26 @@ public class UuseeMediaRecorder extends Activity implements SurfaceHolder.Callba
 		public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2,
 				long arg3) {
 			// TODO Auto-generated method stub
-			Spinner spinner = (Spinner)arg0;
-			String wh[] = spinner.getSelectedItem().toString().split("\\*");
-			width = Integer.parseInt(wh[0]);
-			height = Integer.parseInt(wh[1]);
-			try {
-				camera.lock();
-				camera.stopPreview();
-				Camera.Parameters para = camera.getParameters();
-				para.setPreviewSize(width, height);
-				camera.setParameters(para);
-				camera.setPreviewDisplay(surfaceHolder);
-				camera.startPreview();
-				Log.d("Demo", camera.getParameters().getPreviewSize().width + "*" 
-				+ camera.getParameters().getPreviewSize().height);
-
-				camera.unlock();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				Log.e("Demo", e.getMessage());
-			}
+//			Spinner spinner = (Spinner)arg0;
+//			String wh[] = spinner.getSelectedItem().toString().split("\\*");
+//			width = Integer.parseInt(wh[0]);
+//			height = Integer.parseInt(wh[1]);
+//			try {
+//				camera.lock();
+//				camera.stopPreview();
+//				Camera.Parameters para = camera.getParameters();
+//				para.setPreviewSize(width, height);
+//				camera.setParameters(para);
+//				camera.setPreviewDisplay(surfaceHolder);
+//				camera.startPreview();
+//				Log.d("Demo", camera.getParameters().getPreviewSize().width + "*" 
+//				+ camera.getParameters().getPreviewSize().height);
+//
+//				camera.unlock();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				Log.e("Demo", e.getMessage());
+//			}
 		}
 
 		@Override
@@ -214,8 +211,8 @@ public class UuseeMediaRecorder extends Activity implements SurfaceHolder.Callba
 	public void surfaceCreated(SurfaceHolder holder) {
 		// TODO Auto-generated method stub
 		try{
-			//camera = Camera.open();//2.2 无参数
-//			camera = Camera.open(0);//2.3 参数
+//			camera = Camera.open();//2.2 无参数
+			camera = Camera.open(0);//2.3 参数
 			List<Size> supportedSize = camera.getParameters().getSupportedPreviewSizes();
 			if (supportedSize != null) {
 				List<String> list = new ArrayList<String>();
@@ -241,46 +238,26 @@ public class UuseeMediaRecorder extends Activity implements SurfaceHolder.Callba
 		if(camera != null)
 			camera.release();
 	}
-	private Runnable ReceiveServer = new Runnable() {
+
+	@Override
+	public void onInfo(MediaRecorder arg0, int arg1, int arg2) {
+		// TODO Auto-generated method stub
 		
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			byte[] buffer = new byte[4096];
-			try {
-				int len = 0;
-				InputStream in;
-				LocalSocket socket ;
-				socket = mServerSocket.accept();
-				in = socket.getInputStream();
-				File file = new File("/mnt/sdcard/test.mp4");
-				if(file.exists()) file.delete();
-				file.createNewFile();
-				BufferedOutputStream fout = new BufferedOutputStream(new FileOutputStream(file,true));
-				len = in.read(buffer);
-				while(len!=-1){
-					len = in.read(buffer);
-					writeToFile(fout, buffer);
-				}
-				fout.close();
-				socket.close();
-//				rSocket.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	};
-	private static void writeToFile(BufferedOutputStream fout ,byte[] buffer){
-		LocalSocket socket = new LocalSocket();
-		socket.getFileDescriptor();
-		try{
-			Log.e("seraph_td","write file");
-		//BufferedOutputStream fout = new BufferedOutputStream(new FileOutputStream(file,true));
-			fout.write(buffer, 0, buffer.length);
-		fout.flush();
-		}catch (Exception e) {
-			// TODO: handle exception
-		}
 	}
+
+	@Override
+	public void onError(MediaRecorder mr, int what, int extra) {
+		// TODO Auto-generated method stub
+		
+	}
+	class  SMediaControl extends MediaController{
+
+		public SMediaControl(Context context) {
+			super(context);
+			// TODO Auto-generated constructor stub
+		}
+		
+	}
+	
+	
 }

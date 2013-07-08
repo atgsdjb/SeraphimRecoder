@@ -20,7 +20,7 @@ void* workTask(void* param){
 		char fileName[64]={0};
 		sprintf(fileName,/*context->baseName */lg_baseName,fileIndex++);
 		td_printf("-----begin---%s---\n",fileName);
-		SMp4Creater creater(fileName,10,context->idAndParm,context->idAndBuf,false);
+		SMp4Creater creater(fileName,context->duration,context->idAndParm,context->idAndBuf,false);
 		creater.addPPS(g_PPS,g_lenPPS,0);
 		creater.addSPS(g_SPS,g_lenSPS,0);
 		creater.addFirstSample(g_first,  g_lenFirst);

@@ -189,21 +189,6 @@ int i = 0;
 @Override
 public void onPreviewFrame(byte[] data, Camera camera) {
 	// TODO Auto-generated method stub
-//	if(i<15*60){
-//		try{
-//			out.write(data);
-//			out.flush();
-//		}catch(Exception e){
-//			
-//		}
-//	}else{
-//		try {
-//			out.close();
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
 	byte[] ld=Arrays.copyOf(data, data.length);
 	
 	try {

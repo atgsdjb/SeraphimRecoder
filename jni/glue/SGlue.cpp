@@ -87,6 +87,7 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
 	jfieldID f_v_duration = env->GetFieldID(c_vTrack,"duration","I");
 	jfieldID f_v_usedSoftEncode = env->GetFieldID(c_vTrack,"usedSoft","Z");
 	context = new SEncoderContext;
+	const int duration = 60;
 	const char* l_str = env->GetStringUTFChars(baseName,JNI_FALSE);
 	int l_sampleFile = countSample;
 	int i2;
@@ -105,7 +106,7 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
 			int sampleRate = env->GetIntField(obj,f_v_sampleRate);
 			int duration =env->GetIntField(obj,f_v_duration);
 			bool usedSoft = env->GetBooleanField(obj,f_v_usedSoftEncode);
-			STrackParam *v_param = new SVideoTrackParm(90000,352,288,1024 * 500,25,20);
+			STrackParam *v_param = new SVideoTrackParm(90000,352,288,1024 * 500,25,duration);
 			context->idAndParm[i2] = v_param;
 
 		}else if(type == 1){
@@ -119,7 +120,7 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
 			if(usedSoft){
 				initAAC();
 			}
-			STrackParam *a_param = new SAudioTrackParam(441000,32*1024,44100,20 );
+			STrackParam *a_param = new SAudioTrackParam(441000,32*1024,44100,duration );
 			context->idAndParm[i2] = a_param;
 		}else{
 			//ERROR
@@ -130,7 +131,7 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
 	strcpy(name,l_str);
 	context->baseName = name;
 	context->countTrack = countTrack;
-	context->duration = countSample;
+	context->duration = 10;//countSample;
 	context->runing = true;
 	//start upLoad model
 	//td_printf("----------------------------init ------a0------------\n");

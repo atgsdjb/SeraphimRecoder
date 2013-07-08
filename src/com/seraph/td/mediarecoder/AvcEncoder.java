@@ -2,14 +2,13 @@ package com.seraph.td.mediarecoder;
  
 import java.io.IOException;
 import java.nio.ByteBuffer;
- 
+// 
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
  
 public class AvcEncoder {
  
-//	private EncodedFrameListener frameListener;
 	private MediaCodec mediaCodec;
 	
 	private byte[] sps;
