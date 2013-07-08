@@ -13,16 +13,6 @@ extern"C"{
 #endif
 #include"us_log.h"
 namespace Seraphim{
-	/*
-	static void* encode_task(void *handle){
-		SMp4Creater *creater = (SMp4Creater*)handle;
-		int i =0;
-		for(;i<19;i++){
-			cout<<i<<endl;
-		}
-		return 0;
-	}
-	*/
 	SMp4Creater::SMp4Creater(const char* _name,uint32_t _duration,map<uint8_t,STrackParam*> _trackParamS,map<uint8_t,SSyncBuffer*> _trackBufS,bool _isAsyn/* =false */,CompleteListener _listener/* =0 */)
 	:name(_name),trackParamS(_trackParamS),trackBufS(_trackBufS),duration(_duration),isAsyn(_isAsyn),listener(_listener){
 		assert(_trackBufS.size() == _trackParamS.size());
@@ -32,54 +22,8 @@ namespace Seraphim{
 		}
 		firstSample = 0;
 		initTracks();
-		//seraphim3
-		/*
-		int ll = strlen(name)+1;
-		char* h264Name = new  char[ll];
-		strcpy(h264Name,name);
-		h264Name[ll-4]='h';
-		h264Name[ll-3]='2';
-		h264Name[ll-2]='4';
-		h264Name[ll-1]=0;
-		h264File = fopen(h264Name,"w+");
-		delete[] h264Name;
-		*/
 	}
 
-
-	/************************************************************************/
-	/*                                                                      */
-	/************************************************************************/
-	/*
-	SMp4Creater::SMp4Creater(const char* _name,uint32_t _duration,const vector<STrackParam*>&_trackParam,const vector<SSyncBuffer*>& _trackBufS,bool _isAsyn,CompleteListener _listener)
-	:name(_name),duration(_duration),listener(_listener),isAsyn(_isAsyn){
-		int i = 0;
-		assert(_trackParam.size() == _trackBufS.size());
-		trackCount = _trackParam.size();
-		for(i;i<trackCount;i++){
-			trackS[i] = MP4_INVALID_TRACK_ID;
-			trackBufS[i] = _trackBufS[i];
-			trackParamS[i] = _trackParam[i];
-		}
-		initTracks();
-	}
-	*/
-
-	/************************************************************************/
-	/*                                                                      */
-	/************************************************************************/
-	/*
-	SMp4Creater::SMp4Creater(const char* _name,uint32_t _duration,uint8_t _trackCount,STrackParam* _trackParam,SSyncBuffer* _trackBufS,bool _isAsyn,CompleteListener _listener)
-		:name(_name),trackCount(_trackCount),duration(_duration),listener(_listener),isAsyn(_isAsyn){
-		int i;
-		for (i = 0;i<trackCount;i++){
-			trackS[i] = MP4_INVALID_TRACK_ID;
-			trackBufS[i] = &(_trackBufS[i]);
-			trackParamS[i] = &(_trackParam[i]);
-		}
-		initTracks();
-	}
-	*/
 	void SMp4Creater::addSample8(uint8_t *sample,size_t size,uint8_t trackIndex){
 		//trackBufS[trackIndex].write23(sample,size);
 	}
@@ -102,14 +46,7 @@ namespace Seraphim{
 		if(addFirstSample){
 			//td_printf("addVideoHead\n");
 			firstSample = new uint8_t[lenSPS+lenPPS];
-			//memcpy(firstSample,sps,lenSPS);
-			//memcpy(firstSample+lenSPS,pps,lenPPS);
-			//fwrite(firstSample,1,lenPPS+lenSPS,h264File);
 			MP4WriteSample2(file,trackS[trackIndex],firstSample,lenPPS+lenSPS,false);
-			//td_printf("add head -----len =%d\n",lenPPS+lenSPS);
-			//for(int i=0;i<(lenPPS+lenSPS);i++){
-			//	td_printf("head index =%d   byte=%x\n",i,firstSample[i]);
-			//}
 		}
 
 	}
@@ -198,10 +135,7 @@ namespace Seraphim{
 					trackTimesTampS[i]+=((SAudioTrackParam*)trackParamS[i])->durationPreFrame;
 					trackCompleteS[i] = trackTimesTampS[i] >= trackDurationS[i]; 
 				}
-					//seraphim3
-				//isSync =false;
-				//int ll = trackTimesTampS[i];
-				//td_printf("write into ll =%d  ---trackDurationS=%d-----\n",ll,trackDurationS[i]);
+				
 				MP4WriteSample2(file,trackS[i],sample,len,isSync);
 				delete sample;
 

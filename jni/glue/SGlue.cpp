@@ -139,16 +139,16 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
 	context->baseName = name;
 	context->countTrack = countTrack;
 	//context->duration = countSample;
-	context->duration = 3;
+	context->duration = 30;
 	context->runing = true;
 	context->guid = guid;
 	//start upLoad model
-	td_printf("----------------------------init ------a0------------\n");
+	//td_printf("----------------------------init ------a0------------\n");
 	
-	upload_module_init("");
-	td_printf("----------------------------init ------a1------------\n");
-	upload_module_start(1,guid,"/mnt/sdcard/seraphim",0,0,"219.237.241.176",5601);
-	td_printf("----------------------------init ------a2------------\n");
+	//upload_module_init("");
+	//td_printf("----------------------------init ------a1------------\n");
+	//upload_module_start(1,guid,"/mnt/sdcard/seraphim",0,0,"219.237.241.176",5601);
+	//td_printf("----------------------------init ------a2------------\n");
 	g_PPS =NULL;
 	g_SPS =NULL;
 	pthread_t tid;
