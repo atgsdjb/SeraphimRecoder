@@ -9,6 +9,7 @@ extern"C"{
 //#include<iostream>
 //#include<cassert>
 #endif
+#include"us_log.h"
 using namespace std;
 namespace Seraphim{
 	/************************************************************************/
@@ -18,9 +19,10 @@ namespace Seraphim{
 #ifdef  SDEBUG
 		
 #endif
-		int long_start_code = frame[3]==0x00?5:4;
-		return true;
-		//return (frame[long_start_code]==65);
+		int long_start_code = 4;//frame[3]==0x00?5:4;
+		//return true;
+		uint8_t type = frame[long_start_code] & 0x1f;
+		return (type==0x05);
 	}
 	/************************************************************************/
 	/*                                                                      */

@@ -77,6 +77,7 @@ void td_printf(const char* fmt,...){
 	    int written = 0;
 	    char buffer[MAX_DBG_STR];
 		memset(buffer,0,MAX_DBG_STR);
+		__android_log_write(1,"PORT","LOGError-----------------------0");
 
 	    va_list va;
 	    va_start( va, fmt );
@@ -84,6 +85,7 @@ void td_printf(const char* fmt,...){
 	    va_end(va);
 		FILE *myLog = NULL;
 		myLog = fopen("/mnt/sdcard/seraphim/seraphim.log","a+");
+		__android_log_write(1,"PORT","LOGError----------------------1");
 		if (myLog != NULL)
 		{
 			char tmp[50] = {0};
@@ -106,7 +108,7 @@ void td_printf(const char* fmt,...){
 			fputs("  ",myLog);
 			fputs(buffer,myLog);
 		}else{
-			__android_log_write(1,"PORT","LOGError");
+			__android_log_write(1,"PORT","LOGError--------------2");
 		}
 		fclose(myLog);
 

@@ -1,0 +1,19 @@
+---- addr Matches (4 in 4 files) ----
+SGlue.cpp (jni\glue):205
+	//td_printf("------------add sample trackIndex =%d-----addr=%p---len=%d------------\n",trackIndex,data,len);
+	env->ReleaseByteArrayElements(sample,l_data,0);
+	//seraphim3
+SSyncBuf.cpp (jni\glue):74
+		log4("}{addr=");
+		for(bi;bi<d_buf.end();bi++){
+			log4("[%p]",*bi);
+Task.cpp (jni\glue):157
+//				//td_printf("-add aac sample addr=%p len=%d-----\n",l_b,enc_len);
+//				aacBuffer->write(l_b,enc_len);
+//				fwrite(l_b,1,enc_len,aacfile);
+UuseeCameraActivity.java (src\...\mediarecoder):75
+			InetSocketAddress addr = new InetSocketAddress("219.237.241.176", 5601);
+			Socket  s =  new Socket();
+			s.connect(addr);
+			System.out.println("----------OK----");
+		}catch(Exception e){

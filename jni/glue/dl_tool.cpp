@@ -6,7 +6,7 @@
 #include<errno.h>
 #include"us_log.h"
 //com.seraph.td.mediarecoder
-const char *LIB_PATH="/data/data/com.seraph.td.mediarecoder/lib/libus_upload.0.2.so";
+const char *LIB_PATH="/data/data/com.seraph.td.mediarecoder/lib/libus_upload.0.3.so";//"/mnt/sdcard/libs/libus_upload.0.3.so";//
 //'					  /data/data/com.uusee.mini/lib/libus_upload.0.2.so
 static void* g_handle ;
 typedef int (*fInit)(UUSee_Upload_CallBack callback);
@@ -56,7 +56,7 @@ int upload_module_start(int type,const char* channelld,const char* filepath,int 
 	}
 	fstart f =(fstart) dlsym(g_handle,"UUSee_Upload_start");
 	int result = f(type,channelld,filepath,startunp,endunp,serverip,serverport);
-	td_printf("-------------------------upload_module_start----------code = %d ---------------\n",result);
+	td_printf("upload_module_start-code = %d,type=%d,channelld=%s,filepath=%s,startTunp=%d,endunp=%d,ip=%s,post=%d\n",result,type,channelld,filepath,startunp,endunp,serverip,serverport);
 	return result;
 }
 
@@ -73,5 +73,10 @@ int upload_module_delete(const char* channelid,const char* filepath){
 }
 
 static void taskProcess(char* channelld,UUSee_Event event,void* content){
-		td_printf("------------------%s-----------------\n",channelld);
+		//if(event==9){
+			//int l = *content;
+			td_printf("-----UUSee_Upload_CallBack-------------%s---------UUSeeEvent=%d-----ID=%d---\n",channelld,event,*((int*)content));
+		//}
+		
+		
 }

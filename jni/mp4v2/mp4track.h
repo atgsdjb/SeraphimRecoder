@@ -167,6 +167,8 @@ protected:
 		MP4Duration renderingOffset);
 	void UpdateSyncSamples(MP4SampleId sampleId, 
 		bool isSyncSample);
+	void UpdateSyncSamples2(MP4SampleId sampleId, 
+		bool isSyncSample);
 
 	MP4Atom* AddAtom(char* parentName, char* childName);
 

@@ -88,7 +88,7 @@ extern "C" {
 	}UUSee_Task_Control_s;
 //#pragma pack(pop)
 	
-	
+
 	//外部函数
 	int UUSee_Upload_init(UUSee_Upload_CallBack callback);
 	int UUSee_Upload_quit();

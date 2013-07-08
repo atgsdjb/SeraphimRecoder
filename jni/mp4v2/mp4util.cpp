@@ -61,6 +61,7 @@ void MP4HexDump(
 	}
 	fprintf(pFile, "\n");
 }
+//moov.track[index].tkhd.width
 
 bool MP4NameFirstMatches(const char* s1, const char* s2) 
 {

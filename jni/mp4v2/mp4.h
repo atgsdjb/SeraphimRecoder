@@ -846,6 +846,13 @@ bool MP4ReadSampleFromTime(
 	MP4Duration* pDuration DEFAULT(NULL),
 	MP4Duration* pRenderingOffset DEFAULT(NULL), 
 	bool* pIsSyncSample DEFAULT(NULL));
+bool MP4WriteSample2(
+	MP4FileHandle hFile,
+	MP4TrackId trackId,
+	const u_int8_t* pBytes, 
+	u_int32_t numBytes,
+	bool isSync
+	);
 
 bool MP4WriteSample(
 	MP4FileHandle hFile,

@@ -19,6 +19,6 @@ LOCAL_LDLIBS 		+=  -lz -lc -lm -llog -ldl -lstdc++ -ldl   \
 	                   -luunet \
 #LOCLA_
 //LOCAL_CXXFLAGS += -std=c++11 
-LOCAL_MODULE    := tdcodec.02
+LOCAL_MODULE    := tdcodec.021
 
 include $(BUILD_SHARED_LIBRARY)

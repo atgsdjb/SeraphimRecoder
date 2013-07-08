@@ -206,17 +206,18 @@ public class QCodecSink implements QSink{
 				   int sizePayload = size_buf-sizeHead;
 				   if(notPPS || notSPS){
 						   if(mSink instanceof QMP4Creater){
-						   byte[] sps = new byte[9];
-						   byte[] pps = new byte[4];
-						   for(int i=0;i<9;i++){
-							   sps[i] = h264[4+i];
+						   byte[] sps = new byte[13];
+						   byte[] pps = new byte[8];
+						   int i =0;
+						   for(i=0;i<13;i++){
+							   sps[i] = h264[i];
 						   }
-						   for(int i =0 ;i<4;i++){
-							   pps[i]=h264[16+i];
+						   for(i=0;i<8;i++){
+							   pps[i]=h264[i+13];
 						   }
 						   QMP4Creater creater =(QMP4Creater)mSink;
-						   creater.addSPS(sps, 9);
-						   creater.addPPS(pps, 4);
+						   creater.addSPS(sps, 13);
+						   creater.addPPS(pps, 8);
 						   notPPS = false;
 						   notSPS = false;
 					   }
