@@ -28,7 +28,8 @@
  */
 
 #include "mp4common.h"
-#include"../glue/us_log.h"
+#include"us_log.h"
+
 #define AMR_UNINITIALIZED -1
 #define AMR_TRUE 0
 #define AMR_FALSE 1
@@ -424,6 +425,15 @@ void MP4Track::WriteSample(
 	UpdateModificationTimes();
 
 	m_writeSampleId++;
+	if(m_trackId == 1){
+		uint8_t s0=pBytes[0];
+		uint8_t s1=pBytes[1];
+		uint8_t s2=pBytes[2];
+		uint8_t s3=pBytes[3];
+		uint8_t s4=pBytes[4];
+		td_printf("s0=%x s1=%x s2=%x s3=%x s4=%x count=%d isSyncSample=%d \n",s0,s1,s2,s3,s4,GetNumberOfSamples(),isSyncSample);
+	}
+	
 }
 
 void MP4Track::WriteChunkBuffer()

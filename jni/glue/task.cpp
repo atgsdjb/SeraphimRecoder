@@ -12,6 +12,7 @@ using namespace Seraphim;
 const char* path="/mnt/sdcard/seraphim/";
 const char* lg_baseName="/mnt/sdcard/seraphim/E3DAFD9C-0000-0000-FFFF-FFFFFFFFFF14_%d.mp4";
 void* workTask(void* param){
+	td_printf("start  workTask   ---------\n");
 	static bool firstFile = true;
 	char baseName[64]={0};
 	char allName[128] ={0};
@@ -26,19 +27,22 @@ void* workTask(void* param){
 	do{
 		//td_printf("--wiat pps sps---\n");
 		sleep(1);
-	}while(g_PPS == NULL || g_SPS==NULL || g_first ==NULL);
+	}while(g_PPS == NULL || g_SPS==NULL );
 	while(context->runing){
 		char fileName[128]={0};
 		sprintf(fileName,/*context->baseName */allName,fileIndex++);
 	
 		SMp4Creater creater(fileName,context->duration,context->idAndParm,context->idAndBuf,false);
-		creater.addVideoHead(0, g_PPS, g_lenPPS, g_SPS, g_lenSPS, !firstFile);
-		creater.startEncode();
+		//creater.addVideoHead(0, g_PPS, g_lenPPS, g_SPS, g_lenSPS, !firstFile);
+		creater.addPPS(g_PPS, g_lenPPS,0);
+		creater.addSPS(g_SPS,g_lenSPS,0);
 		td_printf("---start mp4 file -----%s--\n",fileName);
+		creater.startEncode();
+	
 		if(firstFile){
 			firstFile = false;
 		}
-		td_printf("---end   mp4 file ------%s----",fileName);
+		td_printf("---end   mp4 file ------%s----\n",fileName);
 	}
 	td_printf("-----workTask exit---------\n");
 	return 0;
@@ -69,11 +73,11 @@ extern"C"{
 
 		SSyncBuffer *aacBuffer= context->idAndBuf[1];
 		if(pcmBuffer == NULL ){
-//			td_printf("-------------pcmBuffer == NULL----------------\n");
+			td_printf("-------------pcmBuffer == NULL----------------\n");
 			return 0;
 		}
 		if(aacBuffer ==NULL){
-//			td_printf("------aacBuffer ==NULL------------\n");
+			td_printf("------aacBuffer ==NULL------------\n");
 			return 0;
 		}
 		int len=-1;

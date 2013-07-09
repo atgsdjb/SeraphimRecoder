@@ -136,21 +136,21 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1init
 		}
 		context->idAndBuf[i2] = new SSyncBuffer;
 	}
-	td_printf("----------------------------init ------read guid--0----------\n");
+	
 	
 	const char* l_guid = env->GetStringUTFChars(jguid,JNI_FALSE);
-	td_printf("----------------------------init ------read guid--1----------\n");
+
 
 	char* name = new char[128];
 	char* guid = new char[128];
-	td_printf("-guid=%s-----init ------read guid--2----------\n",guid);
+
 	strcpy(guid ,l_guid);
 	strcpy(name,l_str);
 	context->baseName = name;
 	context->countTrack = countTrack;
 
 	//context->duration = countSample;
-	context->duration = 30;
+	context->duration = 10;
 	context->runing = true;
 	context->guid = guid;
 
@@ -169,6 +169,7 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1addSample
   (JNIEnv *env, jobject obj, jbyteArray sample ,jint offset,jint len, jint trackIndex){
 	static int g_index = 0;
 	jbyte* l_data = (jbyte*)env->GetByteArrayElements(sample, 0);
+	/*
 	if(g_first==0){
 		g_first = new uint8_t[len];
 		memcpy(g_first,(uint8_t*)l_data,len);
@@ -176,22 +177,21 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1addSample
 		env->ReleaseByteArrayElements(sample,l_data,0);
 		return ;
 	}
+	*/
 	uint8_t* data = new uint8_t[len];
 	memcpy(data,(uint8_t*)l_data,len);
 	if(data==NULL){
 		td_printf("----------------t0-----------------\n");
 		return;
 	}
-	//td_printf("---trackIndex=%d,g_sps=%p g_pps=%p----------------------------------\n",trackIndex,g_PPS,g_SPS);
+	/*
 	if(trackIndex=0 && (!g_PPS || !g_SPS)){  //  fei qi by trackIndex=0
 		uint8_t *s_pps = NULL;
 		uint8_t	*s_sps =NULL;
 		uint8_t *p;
 		p =data;
 		while(p<data+len){
-			//if(*p==0x00 && *(p+1)==0x00 && *(p+2)==0x00 ){
 				if(s_pps == NULL || s_sps==NULL){
-					//td_printf("----------------s_pps == NULL || s_sps==NULL-----------------\n");
 					if(*(p+4)==0x67)
 					{
 						s_pps = p-4;
@@ -207,14 +207,24 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1addSample
 					memcpy(g_SPS,s_sps,g_lenSPS);
 					memcpy(g_PPS,s_pps,g_lenPPS);
 					const  char * fragment = "pps sps ------";
-					//td_printf("----g_lenSPS=%d g_lenPPS=%d-------\n",g_lenSPS,g_lenPPS);
+					
 					break;
 				}
-	//		}
 		p++;
 		}
+		td_printf("-----------------------FOPEN---------------------\n");
+		FILE* file = fopen("/mnt/sdcard/seraphim/head.dat","w+");
+		fwrite(data,1,len,file);
+		fflush(file);
+		fclose(file);
+		td_printf("-----------------------FCLOSE---------------------\n");
+		td_printf("len=%d len_pps=%d len_SPS=%d\n",len,g_lenPPS,g_lenSPS);
+		p = new uint8_t[len - g_lenPPS - g_lenSPS];
+		memcpy(p,(uint8_t*)data+g_lenSPS+g_lenPPS,len-g_lenPPS-g_lenSPS);
+		delete[] data;
+		data = p;
 	}
-	//td_printf("------------add sample trackIndex =%d-----addr=%p---len=%d------------\n",trackIndex,data,len);
+	*/
 	env->ReleaseByteArrayElements(sample,l_data,0);
 	//seraphim3
 	static int lg_videoIndex=1;
@@ -223,6 +233,14 @@ JNIEXPORT void JNICALL Java_com_seraphim_td_nativ_QMP4Creater_n_1addSample
 	}
 	//seraphim3-end
 	context->idAndBuf[trackIndex]->write(data,len);
+	if(trackIndex==0){
+		uint8_t s0 = data[0];
+		uint8_t s1 = data[1];
+		uint8_t s2 = data[2];
+		uint8_t s3 = data[3];
+		uint8_t s4 = data[4];
+		td_printf("--s0=%x,s1=%x,s2=%x,s3=%x-s4=$x-\n",s0,s1,s2,s3,s4);
+	}
 }
 
 /*

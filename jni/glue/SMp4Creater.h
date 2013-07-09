@@ -28,7 +28,7 @@ namespace Seraphim{
 class SMp4Creater{
 private:
 	/*****/
-	FILE* h264File;
+//	FILE* h264File;
 	/*****/
 	const char		*name;
 	uint32_t	duration;//sec

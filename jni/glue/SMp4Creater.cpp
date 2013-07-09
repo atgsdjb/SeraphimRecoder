@@ -76,7 +76,7 @@ namespace Seraphim{
 	}
 
 	void SMp4Creater::initTracks(){
-		/*****test*******/
+		/*****test*******
 		char h264Name[128]={0};
 		strcpy(h264Name,name);
 		int index = strlen(name);
@@ -84,7 +84,7 @@ namespace Seraphim{
 		h264Name[index-2]='6';
 		h264Name[index-1]='4';
 		h264File = fopen(h264Name,"wb+");
-		/*****test*******/
+		*****test*******/
 		file = MP4CreateEx(name, MP4_DETAILS_ALL, 0, 1, 1, 0, 0, 0, 0);//����mp4�ļ�
 		assert(file !=MP4_INVALID_FILE_HANDLE);
 		MP4SetTimeScale(file,90000);
@@ -160,11 +160,7 @@ namespace Seraphim{
 
 			}
 		}
-		fflush(h264File);
-		fclose(h264File);
 		MP4Close(file);
-		//fflush(h264File);
-		//fclose(h264File);
 		if(isAsyn && listener != 0)
 			listener();
 

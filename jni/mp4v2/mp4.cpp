@@ -37,7 +37,7 @@
  */
 
 #include "mp4common.h"
-
+#include"us_log.h"
 #define PRINT_ERROR(e) \
 	VERBOSE_ERROR(((MP4File*)hFile)->GetVerbosity(), e->Print());
 
@@ -2150,6 +2150,7 @@ extern "C" bool MP4WriteSample(
 	MP4Duration renderingOffset, 
 	bool isSyncSample)
 {
+
 	if (MP4_IS_VALID_FILE_HANDLE(hFile)) {
 		try {
 			((MP4File*)hFile)->WriteSample(
@@ -2159,6 +2160,7 @@ extern "C" bool MP4WriteSample(
 				duration, 
 				renderingOffset, 
 				isSyncSample);
+
 			return true;
 		}
 		catch (MP4Error* e) {

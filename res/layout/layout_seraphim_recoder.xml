@@ -11,6 +11,10 @@
          android:layout_height="match_parent"
          android:orientation="vertical"
          android:layout_weight="1">
+         <LinearLayout
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:orientation="horizontal"> 
          <TextView 
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
@@ -20,6 +24,11 @@
              android:layout_height="wrap_content"
              android:id="@+id/antibanding">
          </Spinner>
+         </LinearLayout>
+         <LinearLayout
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:orientation="horizontal"> 
          <TextView 
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
@@ -29,6 +38,11 @@
              android:layout_height="wrap_content"
              android:id="@+id/colorEffects">
          </Spinner>
+         </LinearLayout>
+         <LinearLayout
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:orientation="horizontal"> 
             <TextView 
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
@@ -38,6 +52,11 @@
              android:layout_height="wrap_content"
              android:id="@+id/flashModes">
          </Spinner>
+         </LinearLayout>
+         <LinearLayout
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:orientation="horizontal"> 
             <TextView 
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
@@ -47,6 +66,11 @@
              android:layout_height="wrap_content"
              android:id="@+id/focusModes">
          </Spinner>
+         </LinearLayout>
+        <LinearLayout
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:orientation="horizontal"> 
             <TextView 
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
@@ -56,6 +80,11 @@
              android:layout_height="wrap_content"
              android:id="@+id/jpegThumbnailSize">
          </Spinner>
+         </LinearLayout>
+       <LinearLayout
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:orientation="horizontal"> 
             <TextView 
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
@@ -65,6 +94,11 @@
              android:layout_height="wrap_content"
              android:id="@+id/pictureFormats">
          </Spinner>
+         </LinearLayout>
+         <LinearLayout
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:orientation="horizontal"> 
             <TextView 
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
@@ -73,7 +107,12 @@
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
              android:id="@+id/pictureSizes">
-         </Spinner>
+         	</Spinner>
+            </LinearLayout>
+       <LinearLayout
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:orientation="horizontal"> 
             <TextView 
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
@@ -83,6 +122,11 @@
              android:layout_height="wrap_content"
              android:id="@+id/previewFormats">
          </Spinner>
+         </LinearLayout>
+       <LinearLayout
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:orientation="horizontal"> 
             <TextView 
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
@@ -92,6 +136,11 @@
              android:layout_height="wrap_content"
              android:id="@+id/previewFpsRange">
          </Spinner>
+         </LinearLayout>
+       <LinearLayout
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:orientation="horizontal"> 
           <TextView 
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
@@ -101,6 +150,11 @@
              android:layout_height="wrap_content"
              android:id="@+id/previewSizes">
          </Spinner>
+         </LinearLayout>
+       <LinearLayout
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:orientation="horizontal"> 
             <TextView 
              android:layout_width="fill_parent"
              android:layout_height="match_parent"
@@ -110,6 +164,11 @@
              android:layout_height="wrap_content"
              android:id="@+id/sceneModes">
          </Spinner>
+         </LinearLayout>
+       <LinearLayout
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:orientation="horizontal"> 
             <TextView 
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
@@ -119,8 +178,13 @@
              android:layout_height="wrap_content"
              android:id="@+id/videoSizes">
          </Spinner>
-            <TextView 
+         </LinearLayout>
+       <LinearLayout
              android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:orientation="horizontal"> 
+            <TextView 
+             android:layout_width="wrap_content"
              android:layout_height="wrap_content"
              android:text="whiteBalance"/>
            <Spinner
@@ -128,6 +192,11 @@
              android:layout_height="wrap_content"
              android:id="@+id/whiteBalance">
          </Spinner>
+         </LinearLayout>
+       <LinearLayout
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:orientation="horizontal"> 
            <TextView 
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
@@ -137,6 +206,7 @@
              android:layout_height="wrap_content"
              android:id="@+id/zoomRations">
          </Spinner>"
+         </LinearLayout>
      </LinearLayout>
      <Button 
          android:layout_width="fill_parent"
